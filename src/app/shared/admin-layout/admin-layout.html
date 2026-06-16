@@ -1,0 +1,69 @@
+<div class="admin-wrapper">
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.open]="isSidebarOpen">
+    <div class="sidebar-header">
+      <span class="material-icons logo-icon">domain</span>
+      <span class="logo-text">Admin <span class="highlight">Portal</span></span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="material-icons item-icon">dashboard</span>
+        <span class="item-label">Dashboard</span>
+      </a>
+      <a routerLink="/admin/projects" routerLinkActive="active" class="nav-item">
+        <span class="material-icons item-icon">construction</span>
+        <span class="item-label">Projects</span>
+      </a>
+      <a routerLink="/admin/buildings" routerLinkActive="active" class="nav-item">
+        <span class="material-icons item-icon">corporate_fare</span>
+        <span class="item-label">Buildings</span>
+      </a>
+      <a routerLink="/admin/floors" routerLinkActive="active" class="nav-item">
+        <span class="material-icons item-icon">layers</span>
+        <span class="item-label">Floors</span>
+      </a>
+      <a routerLink="/admin/shop-units" routerLinkActive="active" class="nav-item">
+        <span class="material-icons item-icon">storefront</span>
+        <span class="item-label">Shop Units</span>
+      </a>
+      <a routerLink="/admin/lease-requests" routerLinkActive="active" class="nav-item">
+        <span class="material-icons item-icon">description</span>
+        <span class="item-label">Lease Requests</span>
+      </a>
+      <a routerLink="/admin/purchase-requests" routerLinkActive="active" class="nav-item">
+        <span class="material-icons item-icon">monetization_on</span>
+        <span class="item-label">Purchases</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a routerLink="/" class="btn-home">
+        <span class="material-icons item-icon">public</span>
+        <span class="item-label">Public Site</span>
+      </a>
+      <button class="btn-logout" (click)="onLogout()">
+        <span class="material-icons item-icon">logout</span>
+        <span class="item-label">Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Panel Content -->
+  <div class="main-panel">
+    <header class="panel-header">
+      <button class="toggle-sidebar" (click)="toggleSidebar()">
+        <span class="material-icons">menu</span>
+      </button>
+      <div class="admin-profile">
+        <span class="material-icons avatar">account_circle</span>
+        <span class="name">{{ authService.currentUserSignal()?.name }}</span>
+        <span class="role-badge">ADMIN</span>
+      </div>
+    </header>
+    
+    <main class="panel-body">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

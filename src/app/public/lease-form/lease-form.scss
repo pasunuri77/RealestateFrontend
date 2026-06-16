@@ -1,0 +1,25 @@
+.lease-form-page { background: var(--color-bg-light); min-height: 90vh; padding: 4rem 1.5rem; }
+.container { max-width: 650px; margin: 0 auto; }
+
+.form-card { background: var(--color-bg-white); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 3rem; box-shadow: var(--shadow-lg); }
+.header { margin-bottom: 2rem; border-bottom: 2px solid var(--color-bg-light); padding-bottom: 1rem; h2 { font-size: 1.75rem; font-weight: 800; color: var(--color-text-dark); } .unit-ref { color: var(--color-text-muted); font-size: 0.95rem; } }
+
+.form-body { display: flex; flex-direction: column; gap: 1.25rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; @media (max-width: 576px) { grid-template-columns: 1fr; } }
+
+.form-group {
+  display: flex; flex-direction: column; gap: 0.35rem;
+  label { font-size: 0.85rem; font-weight: 600; color: var(--color-text-muted); }
+  input, select, textarea {
+    border: 1px solid var(--color-border); padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.95rem; transition: var(--transition-smooth); background: var(--color-bg-white);
+    &:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(10, 77, 74, 0.1); }
+    &.error { border-color: #EF4444; background: #FEF2F2; }
+  }
+}
+
+.error-alert { background: #FEE2E2; color: #991B1B; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.9rem; font-weight: 600; margin-bottom: 1.5rem; border: 1px solid #FCA5A5; }
+.success-alert { background: #D1FAE5; color: #065F46; padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.9rem; font-weight: 600; margin-bottom: 1.5rem; border: 1px solid #A7F3D0; }
+
+.actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem; }
+.btn-cancel { background: var(--color-bg-light); color: var(--color-text-dark); border: 1px solid var(--color-border); padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; transition: var(--transition-smooth); &:hover { background: var(--color-border); } }
+.btn-submit { background: var(--color-primary); color: #FFF; border: none; padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; transition: var(--transition-smooth); &:hover { background: var(--color-primary-hover); } &:disabled { background: var(--color-text-light); cursor: not-allowed; } }

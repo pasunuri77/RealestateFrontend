@@ -1,0 +1,88 @@
+<div class="purchase-form-page">
+  <div class="container">
+    <div class="form-card">
+      <div class="header">
+        <h2>Purchase Request</h2>
+        @if (unit) {
+          <p class="unit-ref">Applying for Unit: <strong>{{ unit.unitNumber }}</strong> | Price: <strong>₹{{ unit.salePrice | number }}</strong></p>
+        }
+      </div>
+
+      @if (errorMessage) {
+        <div class="error-alert">{{ errorMessage }}</div>
+      }
+      @if (successMessage) {
+        <div class="success-alert">{{ successMessage }}</div>
+      }
+
+      <form [formGroup]="purchaseForm" (ngSubmit)="onSubmit()" class="form-body">
+        <div class="form-group">
+          <label for="customerName">Full Name *</label>
+          <input 
+            type="text" 
+            id="customerName" 
+            formControlName="customerName" 
+            placeholder="Rahul Sharma"
+            [class.error]="isFieldInvalid('customerName')"
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email" 
+              placeholder="name&#64;company.com"
+              [class.error]="isFieldInvalid('email')"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone Number *</label>
+            <input 
+              type="tel" 
+              id="phone" 
+              formControlName="phone" 
+              placeholder="10-digit mobile number"
+              [class.error]="isFieldInvalid('phone')"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="budget">Your Budget (₹) *</label>
+          <input 
+            type="number" 
+            id="budget" 
+            formControlName="budget" 
+            placeholder="Maximum price range"
+            [class.error]="isFieldInvalid('budget')"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="message">Describe your query / customization requirements</label>
+          <textarea 
+            id="message" 
+            formControlName="message" 
+            rows="4" 
+            placeholder="Describe your payment plan preference or construction customization requests..."
+          ></textarea>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn-cancel" [routerLink]="['/units', unitId]">Cancel</button>
+          <button type="submit" class="btn-submit" [disabled]="purchaseForm.invalid || isLoading">
+            @if (isLoading) {
+              <span>Submitting request...</span>
+            } @else {
+              <span>Submit Purchase Request</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

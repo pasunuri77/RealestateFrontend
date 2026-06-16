@@ -1,0 +1,56 @@
+<div class="lease-admin">
+  <div class="admin-header">
+    <div>
+      <h1>Lease Requests</h1>
+      <p>Review commercial tenant applications and grant leasing contracts.</p>
+    </div>
+  </div>
+
+  <!-- Queue List -->
+  @if (isLoading) {
+    <div class="loading">Loading lease requests queue...</div>
+  } @else {
+    <div class="table-container">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Customer Details</th>
+            <th>Unit ID</th>
+            <th>Business Category</th>
+            <th>Term</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (l of leases; track l.id) {
+            <tr>
+              <td>
+                <strong>{{ l.customerName }}</strong><br>
+                <span class="subtext" style="display: inline-flex; align-items: center; gap: 0.25rem; flex-wrap: wrap;"><span class="material-icons" style="font-size: 0.95rem; vertical-align: middle;">phone</span> {{ l.phone }} | <span class="material-icons" style="font-size: 0.95rem; vertical-align: middle;">email</span> {{ l.email }}</span>
+              </td>
+              <td>Unit #{{ l.unitId }}</td>
+              <td>{{ l.businessType }}</td>
+              <td>{{ l.leaseType }}</td>
+              <td><span class="status-badge" [class]="l.status?.toLowerCase()">{{ l.status }}</span></td>
+              <td>
+                <select #statusSelect [value]="l.status" (change)="onChangeStatus(l.id!, statusSelect.value)" class="status-select">
+                  <option value="PENDING">PENDING</option>
+                  <option value="CONTACTED">CONTACTED</option>
+                  <option value="APPROVED">APPROVED</option>
+                  <option value="REJECTED">REJECTED</option>
+                  <option value="CONVERTED">CONVERTED</option>
+                </select>
+                <button class="btn-delete" (click)="onDelete(l.id!)">Delete</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="empty-state">No lease requests found in registry.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

@@ -1,0 +1,100 @@
+<div class="unit-detail-page">
+  @if (isLoading) {
+    <div class="loading-state">Fetching unit specifications...</div>
+  } @else if (unit) {
+    <div class="detail-header">
+      <div class="container">
+        <span class="badge" [class]="unit.availabilityType.toLowerCase()">For {{ unit.availabilityType }}</span>
+        <h1>Unit {{ unit.unitNumber }}</h1>
+        <p class="project-name">Development: {{ projectName }}</p>
+      </div>
+    </div>
+
+    <div class="container main-content">
+      <div class="layout-grid">
+        <!-- Left Specifications Card -->
+        <div class="spec-section">
+          <div class="card">
+            <h2>Technical Specifications</h2>
+            <div class="specs-grid">
+              <div class="spec-item">
+                <span>Unit Number</span>
+                <strong>{{ unit.unitNumber }}</strong>
+              </div>
+              <div class="spec-item">
+                <span>Category</span>
+                <strong>{{ unit.unitType }}</strong>
+              </div>
+              <div class="spec-item">
+                <span>Dimensions (Sqft)</span>
+                <strong>{{ unit.areaSqft }} Sq.Ft</strong>
+              </div>
+              <div class="spec-item">
+                <span>Occupancy Status</span>
+                <strong class="status-val" [class]="unit.status.toLowerCase()">{{ unit.status }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pricing Card -->
+          <div class="card">
+            <h2>Pricing Details</h2>
+            <div class="pricing-list">
+              @if (unit.availabilityType === 'LEASE' || unit.availabilityType === 'BOTH') {
+                <div class="price-row">
+                  <span>Monthly Rent:</span>
+                  <strong>₹{{ unit.monthlyRent | number }}</strong>
+                </div>
+                <div class="price-row">
+                  <span>Yearly Rent Commitment:</span>
+                  <strong>₹{{ unit.yearlyRent | number }}</strong>
+                </div>
+              }
+              @if (unit.availabilityType === 'SALE' || unit.availabilityType === 'BOTH') {
+                <div class="price-row">
+                  <span>Purchase Value:</span>
+                  <strong class="gold-accent">₹{{ unit.salePrice | number }}</strong>
+                </div>
+                <div class="price-row">
+                  <span>Booking Deposit Amount:</span>
+                  <strong>₹{{ unit.bookingAmount | number }}</strong>
+                </div>
+              }
+              <div class="price-row border-top">
+                <span>Recurring Maintenance Charges:</span>
+                <span>₹{{ unit.maintenanceCharges | number }}/mo</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Action Box -->
+        <div class="action-section">
+          <div class="card action-card">
+            <h3>Interested in this Unit?</h3>
+            <p>Submit an online application request below. Our operations manager will arrange a floor viewing.</p>
+            
+            <div class="buttons">
+              @if (unit.availabilityType === 'LEASE' || unit.availabilityType === 'BOTH') {
+                <button class="btn-primary" [routerLink]="['/units', unit.shopOrUnitId, 'lease']">
+                  Lease this Unit
+                </button>
+              }
+              @if (unit.availabilityType === 'SALE' || unit.availabilityType === 'BOTH') {
+                <button class="btn-secondary" [routerLink]="['/units', unit.shopOrUnitId, 'purchase']">
+                  Purchase this Unit
+                </button>
+              }
+            </div>
+            
+            <div class="inquiry-guarantee">
+              <span>🔒 Secure application. Direct developer routing.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="error-state">We couldn't retrieve the specifications for this unit.</div>
+  }
+</div>

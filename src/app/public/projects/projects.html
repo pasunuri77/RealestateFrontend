@@ -1,0 +1,50 @@
+<div class="projects-page">
+  <div class="page-header">
+    <div class="container">
+      <h1>Our Landmark Projects</h1>
+      <p>Explore our commercial, residential, and mixed-use real estate portfolios across key metropolitan growth areas.</p>
+    </div>
+  </div>
+
+  <div class="container main-content">
+    <!-- Status Filters -->
+    <div class="filter-bar">
+      <button (click)="filterStatus('All')" [class.active]="selectedStatus === 'All'">All Projects</button>
+      <button (click)="filterStatus('Completed')" [class.active]="selectedStatus === 'Completed'">Completed</button>
+      <button (click)="filterStatus('Ongoing')" [class.active]="selectedStatus === 'Ongoing'">Ongoing</button>
+      <button (click)="filterStatus('Upcoming')" [class.active]="selectedStatus === 'Upcoming'">Upcoming</button>
+    </div>
+
+    @if (isLoading) {
+      <div class="loading">Fetching projects portfolio...</div>
+    } @else {
+      <div class="projects-grid">
+        @for (project of filteredProjects; track project.id) {
+          <div class="project-card">
+            <div class="card-img">
+              <img src="/metro-plaza.png" [alt]="project.name" />
+              <span class="status-badge" [class]="project.status.toLowerCase()">{{ project.status }}</span>
+            </div>
+            <div class="card-info">
+              <span class="project-type">{{ project.projectType }}</span>
+              <h2>{{ project.name }}</h2>
+              <p class="location" style="display: flex; align-items: center; gap: 0.25rem;"><span class="material-icons" style="font-size: 1.15rem;">place</span> {{ project.location }}</p>
+              <p class="desc">{{ project.description }}</p>
+              
+              <div class="dates">
+                <div>
+                  <span>Expected End</span>
+                  <strong>{{ project.expectedCompletionDate | date:'mediumDate' }}</strong>
+                </div>
+              </div>
+              
+              <button class="btn-details" [routerLink]="['/projects', project.id]">Explore Development</button>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state">No projects found matching status: {{ selectedStatus }}.</div>
+        }
+      </div>
+    }
+  </div>
+</div>

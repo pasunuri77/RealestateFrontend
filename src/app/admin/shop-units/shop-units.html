@@ -1,0 +1,246 @@
+<div class="units-admin">
+  <div class="admin-header">
+    <div>
+      <h1>Manage Shop Units</h1>
+      <p>Register individual offices, retail showroom spaces, and pricing scopes.</p>
+    </div>
+    <button class="btn-add" (click)="openAddForm()">Add Shop Unit</button>
+  </div>
+
+  <!-- Modal Form -->
+  @if (showForm) {
+    <div class="form-modal">
+      <div class="modal-card">
+        <h2>{{ isEditMode ? 'Edit Shop Unit' : 'New Shop Unit' }}</h2>
+        <form [formGroup]="unitForm" (ngSubmit)="onSubmit()">
+          @if (errorMessage) {
+            <div class="error-alert" style="color: #ef4444; background: #fee2e2; padding: 0.75rem 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; font-size: 0.9rem;">
+              {{ errorMessage }}
+            </div>
+          }
+          <div class="form-row">
+            <div class="form-group">
+              <label>Project *</label>
+              <select formControlName="projectId">
+                @for (p of projects; track p.id) {
+                  <option [value]="p.id">{{ p.name }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Building Block *</label>
+              <select formControlName="buildingId">
+                @for (b of buildings; track b.id) {
+                  <option [value]="b.id">{{ b.name }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Floor Level *</label>
+              <select formControlName="floorId">
+                @for (f of floors; track f.id) {
+                  <option [value]="f.id">{{ f.floorName }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Unit Number *</label>
+              <input type="text" formControlName="unitNumber" placeholder="e.g. Shop G-01, Office 404" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Unit Type *</label>
+              <select formControlName="unitType">
+                <option value="SHOP">Shop</option>
+                <option value="OFFICE">Office</option>
+                <option value="FLAT">Flat</option>
+                <option value="APARTMENT">Apartment</option>
+                <option value="SHOWROOM">Showroom</option>
+                <option value="WAREHOUSE">Warehouse</option>
+                <option value="RETAIL_SPACE">Retail Space</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Area (Sqft) *</label>
+              <input type="number" formControlName="areaSqft" placeholder="e.g. 500" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Availability Class *</label>
+              <select formControlName="availabilityType">
+                <option value="LEASE">LEASE</option>
+                <option value="SALE">SALE</option>
+                <option value="BOTH">BOTH</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Status *</label>
+              <select formControlName="status">
+                <option value="AVAILABLE">AVAILABLE</option>
+                <option value="PENDING_LEASE">PENDING_LEASE</option>
+                <option value="LEASED">LEASED</option>
+                <option value="SOLD">SOLD</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Monthly Rent (₹)</label>
+              <input type="number" formControlName="monthlyRent" />
+            </div>
+            <div class="form-group">
+              <label>Yearly Rent (₹)</label>
+              <input type="number" formControlName="yearlyRent" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Sale Price (₹)</label>
+              <input type="number" formControlName="salePrice" />
+            </div>
+            <div class="form-group">
+              <label>Booking Deposit (₹)</label>
+              <input type="number" formControlName="bookingAmount" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Maintenance Charges (₹/mo)</label>
+              <input type="number" formControlName="maintenanceCharges" />
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-close" (click)="closeForm()">Cancel</button>
+            <button type="submit" class="btn-submit" [disabled]="unitForm.invalid">
+              {{ isEditMode ? 'Save Changes' : 'Create Unit' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- List -->
+  @if (isLoading) {
+    <div class="loading">Loading shop units...</div>
+  } @else {
+    @if (units.length === 0) {
+      <div class="table-container">
+        <table class="admin-table">
+          <tbody>
+            <tr>
+              <td class="empty-state">No shop units found. Click Add Shop Unit to configure one.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      @for (b of buildings; track b.id) {
+        @if (getUnitsByBuilding(b.id!).length > 0) {
+          <div class="building-units-section" style="margin-bottom: 2.5rem;">
+            <h3 class="building-section-title" style="display: flex; align-items: center; gap: 0.5rem; color: var(--color-primary); font-size: 1.25rem; font-weight: 700; border-bottom: 2px solid var(--color-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+              <span class="material-icons">corporate_fare</span>
+              {{ b.name }}
+            </h3>
+            <div class="table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Unit Number</th>
+                    <th>Type</th>
+                    <th>Area</th>
+                    <th>Availability</th>
+                    <th>Rent/Price</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (u of getUnitsByBuilding(b.id!); track u.shopOrUnitId) {
+                    <tr>
+                      <td><strong>{{ u.unitNumber }}</strong></td>
+                      <td>{{ u.unitType }}</td>
+                      <td>{{ u.areaSqft }} sq.ft</td>
+                      <td>{{ u.availabilityType }}</td>
+                      <td>
+                        @if (u.availabilityType === 'LEASE' || u.availabilityType === 'BOTH') {
+                          <span>Rent: ₹{{ u.monthlyRent | number }}/mo</span><br>
+                        }
+                        @if (u.availabilityType === 'SALE' || u.availabilityType === 'BOTH') {
+                          <span>Sale: ₹{{ u.salePrice | number }}</span>
+                        }
+                      </td>
+                      <td><span class="status-badge" [class]="u.status.toLowerCase()">{{ u.status }}</span></td>
+                      <td>
+                        <button class="btn-edit" (click)="openEditForm(u)">Edit</button>
+                        <button class="btn-delete" (click)="onDelete(u.shopOrUnitId!)">Delete</button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      }
+
+      @if (getUnassignedUnits().length > 0) {
+        <div class="building-units-section" style="margin-bottom: 2.5rem;">
+          <h3 class="building-section-title" style="display: flex; align-items: center; gap: 0.5rem; color: var(--color-text-muted); font-size: 1.25rem; font-weight: 700; border-bottom: 2px solid var(--color-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+            <span class="material-icons">help_outline</span>
+            Unassigned Shop Units
+          </h3>
+          <div class="table-container">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Unit Number</th>
+                  <th>Type</th>
+                  <th>Area</th>
+                  <th>Availability</th>
+                  <th>Rent/Price</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (u of getUnassignedUnits(); track u.shopOrUnitId) {
+                  <tr>
+                    <td><strong>{{ u.unitNumber }}</strong></td>
+                    <td>{{ u.unitType }}</td>
+                    <td>{{ u.areaSqft }} sq.ft</td>
+                    <td>{{ u.availabilityType }}</td>
+                    <td>
+                      @if (u.availabilityType === 'LEASE' || u.availabilityType === 'BOTH') {
+                        <span>Rent: ₹{{ u.monthlyRent | number }}/mo</span><br>
+                      }
+                      @if (u.availabilityType === 'SALE' || u.availabilityType === 'BOTH') {
+                        <span>Sale: ₹{{ u.salePrice | number }}</span>
+                      }
+                    </td>
+                    <td><span class="status-badge" [class]="u.status.toLowerCase()">{{ u.status }}</span></td>
+                    <td>
+                      <button class="btn-edit" (click)="openEditForm(u)">Edit</button>
+                      <button class="btn-delete" (click)="onDelete(u.shopOrUnitId!)">Delete</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    }
+  }
+</div>

@@ -1,0 +1,174 @@
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="hero-bg-overlay"></div>
+  <div class="hero-container">
+    <div class="hero-content">
+      <span class="hero-tag">Premium Construction & Commercial Leasing</span>
+      <h1 class="hero-title">Build. Lease.<br>Own. Grow.</h1>
+      <p class="hero-subtitle">
+        Explore completed, ongoing, and upcoming real estate projects with premium commercial spaces and units available for lease and sale.
+      </p>
+      <div class="hero-actions">
+        <button class="btn btn-primary-gold" (click)="scrollToSection('featured-projects')">View Projects</button>
+        <button class="btn btn-secondary-outline" (click)="scrollToSection('available-units')">Explore Available Units</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Status Overview Section -->
+<section class="status-section">
+  <div class="section-container">
+    <div class="status-grid">
+      <div class="status-card completed">
+        <div class="card-header">
+          <span class="project-count">24</span>
+          <span class="status-badge">Completed</span>
+        </div>
+        <h3 class="card-title">Completed Spaces</h3>
+        <p class="card-desc">Fully operational corporate complexes and retail plazas.</p>
+        <button class="btn-view" (click)="scrollToSection('featured-projects')">Explore Projects →</button>
+      </div>
+      <div class="status-card ongoing">
+        <div class="card-header">
+          <span class="project-count">12</span>
+          <span class="status-badge">Ongoing</span>
+        </div>
+        <h3 class="card-title">Under Construction</h3>
+        <p class="card-desc">Modern townships and skyscrapers built with green standards.</p>
+        <button class="btn-view" (click)="scrollToSection('featured-projects')">Explore Projects →</button>
+      </div>
+      <div class="status-card upcoming">
+        <div class="card-header">
+          <span class="project-count">8</span>
+          <span class="status-badge">Upcoming</span>
+        </div>
+        <h3 class="card-title">Future Blueprints</h3>
+        <p class="card-desc">Upcoming residential zones and mixed-use commercial centers.</p>
+        <button class="btn-view" (click)="scrollToSection('featured-projects')">Explore Projects →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Projects Section -->
+<section id="featured-projects" class="projects-section">
+  <div class="section-container">
+    <div class="section-header">
+      <span class="section-tag">Portfolio Highlights</span>
+      <h2 class="section-title">Featured Real Estate Projects</h2>
+      <p class="section-subtitle">Stunning developments engineered to host enterprise growth and high-end modern living.</p>
+    </div>
+    
+    @if (isLoadingProjects) {
+      <div class="loading">Loading projects from backend API...</div>
+    } @else {
+      <div class="cards-grid">
+        @for (project of projects; track project.id) {
+          <div class="project-card">
+            <div class="image-wrapper">
+              <img src="/metro-plaza.png" [alt]="project.name" class="project-image" />
+              <span class="status-badge-inline" [class]="project.status.toLowerCase()">{{ project.status }}</span>
+              <span class="type-badge">{{ project.projectType }}</span>
+            </div>
+            <div class="card-content">
+              <div class="location-wrapper" style="display: flex; align-items: center; gap: 0.25rem;">
+                <span class="material-icons" style="font-size: 1.15rem;">place</span>
+                <span>{{ project.location }}</span>
+              </div>
+              <h3 class="project-name">{{ project.name }}</h3>
+              <p class="project-desc">{{ project.description }}</p>
+              <button class="btn-card-action" [routerLink]="['/projects', project.id]">View Project Details</button>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state">No projects found. Add them in the Admin Panel.</div>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<!-- Available Units Section -->
+<section id="available-units" class="units-section">
+  <div class="section-container">
+    <div class="section-header">
+      <span class="section-tag">Immediate Openings</span>
+      <h2 class="section-title">Units Available for Lease & Sale</h2>
+      <p class="section-subtitle">Find premium offices, retail spots, and shops ready for your business operations.</p>
+    </div>
+    
+    @if (isLoadingUnits) {
+      <div class="loading">Loading units from backend API...</div>
+    } @else {
+      <div class="cards-grid">
+        @for (unit of units; track unit.shopOrUnitId) {
+          <div class="unit-card">
+            <div class="image-wrapper">
+              <img src="/tech-park.png" [alt]="unit.unitNumber" class="unit-image" />
+              <span class="availability-badge" [class]="unit.availabilityType.toLowerCase()">For {{ unit.availabilityType }}</span>
+            </div>
+            <div class="card-content">
+              <div class="unit-meta">
+                <span class="area-tag">{{ unit.areaSqft }} Sq.Ft</span>
+                <span class="type-tag">{{ unit.unitType }}</span>
+              </div>
+              <h3 class="unit-title">Unit {{ unit.unitNumber }}</h3>
+              
+              <div class="pricing-box">
+                @if (unit.availabilityType === 'LEASE' || unit.availabilityType === 'BOTH') {
+                  <div class="price-row">
+                    <span>Monthly Rent:</span>
+                    <strong>₹{{ unit.monthlyRent | number }}</strong>
+                  </div>
+                }
+                @if (unit.availabilityType === 'SALE' || unit.availabilityType === 'BOTH') {
+                  <div class="price-row">
+                    <span>Sale Price:</span>
+                    <strong class="gold-text">₹{{ unit.salePrice | number }}</strong>
+                  </div>
+                }
+              </div>
+              <button class="btn-card-action" [routerLink]="['/units', unit.shopOrUnitId]">Explore Unit details</button>
+            </div>
+          </div>
+        } @empty {
+          <div class="empty-state">No commercial/residential units available right now.</div>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<!-- Why Choose Us -->
+<section id="why-choose-us" class="features-section">
+  <div class="section-container">
+    <div class="section-header center">
+      <span class="section-tag">Value Proposition</span>
+      <h2 class="section-title">Why Business Owners Partner With Us</h2>
+      <p class="section-subtitle">Setting unmatched records of engineering excellence and operational transparency.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="icon-container"><span class="material-icons">architecture</span></div>
+        <h3>Trusted Construction</h3>
+        <p>Over two decades of structural integrity and premium finishes.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon-container"><span class="material-icons">place</span></div>
+        <h3>Prime Locations</h3>
+        <p>Developments centered in high-density corridors with heavy transit access.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon-container"><span class="material-icons">vpn_key</span></div>
+        <h3>Lease and Sale Options</h3>
+        <p>Tailored financial models with customized options for businesses.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon-container"><span class="material-icons">visibility</span></div>
+        <h3>Transparent Process</h3>
+        <p>Open progress reviews, legal checkmarks, and zero hidden charges.</p>
+      </div>
+    </div>
+  </div>
+</section>

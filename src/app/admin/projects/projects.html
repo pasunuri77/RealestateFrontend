@@ -1,0 +1,104 @@
+<div class="projects-admin">
+  <div class="admin-header">
+    <div>
+      <h1>Manage Projects</h1>
+      <p>Configure property developments, schedules, and completion states.</p>
+    </div>
+    <button class="btn-add" (click)="openAddForm()">Add Project</button>
+  </div>
+
+  <!-- inline Form Modal -->
+  @if (showForm) {
+    <div class="form-modal">
+      <div class="modal-card">
+        <h2>{{ isEditMode ? 'Edit Project' : 'New Project' }}</h2>
+        <form [formGroup]="projectForm" (ngSubmit)="onSubmit()">
+          <div class="form-group">
+            <label>Project Name *</label>
+            <input type="text" formControlName="name" placeholder="e.g. Green Heights residency" />
+          </div>
+          <div class="form-group">
+            <label>Location *</label>
+            <input type="text" formControlName="location" placeholder="e.g. Bangalore" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Type *</label>
+              <select formControlName="projectType">
+                <option value="COMMERCIAL">Commercial</option>
+                <option value="RESIDENTIAL">Residential</option>
+                <option value="MIXED_USE">Mixed Use</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Status *</label>
+              <select formControlName="status">
+                <option value="COMPLETED">Completed</option>
+                <option value="ONGOING">Ongoing</option>
+                <option value="UPCOMING">Upcoming</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Start Date *</label>
+              <input type="date" formControlName="startDate" />
+            </div>
+            <div class="form-group">
+              <label>Expected Completion *</label>
+              <input type="date" formControlName="expectedCompletionDate" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea formControlName="description" rows="3" placeholder="Provide construction layout details..."></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-close" (click)="closeForm()">Cancel</button>
+            <button type="submit" class="btn-submit" [disabled]="projectForm.invalid">
+              {{ isEditMode ? 'Save Changes' : 'Create Project' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Projects Table List -->
+  @if (isLoading) {
+    <div class="loading">Loading projects from database...</div>
+  } @else {
+    <div class="table-container">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Project Name</th>
+            <th>Location</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of projects; track p.id) {
+            <tr>
+              <td><strong>{{ p.name }}</strong></td>
+              <td>{{ p.location }}</td>
+              <td>{{ p.projectType }}</td>
+              <td><span class="status-badge" [class]="p.status.toLowerCase()">{{ p.status }}</span></td>
+              <td>
+                <button class="btn-edit" (click)="openEditForm(p)">Edit</button>
+                <button class="btn-delete" (click)="onDelete(p.id!)">Delete</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="empty-state">No projects found. Create one.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

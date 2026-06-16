@@ -1,0 +1,49 @@
+<div class="purchase-admin">
+  <div class="admin-header">
+    <div>
+      <h1>Purchase Offers Registry</h1>
+      <p>Review customer offers for commercial showroom or residential unit purchases.</p>
+    </div>
+  </div>
+
+  <!-- Offer Queue -->
+  @if (isLoading) {
+    <div class="loading">Loading offers queue...</div>
+  } @else {
+    <div class="table-container">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Buyer Details</th>
+            <th>Unit ID</th>
+            <th>Offered Price</th>
+            <th>Proposal/Message</th>
+            <th>Date Received</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of purchases; track p.id) {
+            <tr>
+              <td>
+                <strong>{{ p.customerName }}</strong><br>
+                <span class="subtext" style="display: inline-flex; align-items: center; gap: 0.25rem; flex-wrap: wrap;"><span class="material-icons" style="font-size: 0.95rem; vertical-align: middle;">phone</span> {{ p.phone }} | <span class="material-icons" style="font-size: 0.95rem; vertical-align: middle;">email</span> {{ p.email }}</span>
+              </td>
+              <td>Unit #{{ p.unitId }}</td>
+              <td><strong class="price-accent">₹{{ p.budget | number }}</strong></td>
+              <td class="msg-col">{{ p.message }}</td>
+              <td>{{ p.createdAt | date:'short' }}</td>
+              <td>
+                <button class="btn-delete" (click)="onDelete(p.id!)">Remove</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="empty-state">No purchase requests submitted yet.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

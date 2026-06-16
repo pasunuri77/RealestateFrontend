@@ -1,0 +1,145 @@
+<div class="buildings-admin">
+  <div class="admin-header">
+     <div>
+       <h1>Manage Buildings</h1>
+       <p>Register structural tower blocks, wings, and retail buildings.</p>
+     </div>
+     <button class="btn-add" (click)="openAddForm()">Add Building</button>
+  </div>
+
+  <!-- Modal -->
+  @if (showForm) {
+    <div class="form-modal">
+      <div class="modal-card">
+        <h2>{{ isEditMode ? 'Edit Building Block' : 'New Building Block' }}</h2>
+        <form [formGroup]="buildingForm" (ngSubmit)="onSubmit()">
+          @if (errorMessage) {
+            <div class="error-alert" style="color: #ef4444; background: #fee2e2; padding: 0.75rem 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; font-size: 0.9rem;">
+              {{ errorMessage }}
+            </div>
+          }
+          
+          <div class="form-group">
+            <label>Parent Project *</label>
+            <select formControlName="projectId">
+              @for (p of projects; track p.id) {
+                <option [value]="p.id">{{ p.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Building Block Name *</label>
+            <input type="text" formControlName="name" placeholder="e.g. Block A, Wing 1, Tower 2" />
+          </div>
+
+          <div class="form-group">
+            <label>Total Floors *</label>
+            <input type="number" formControlName="totalFloors" placeholder="e.g. 5" />
+          </div>
+
+          <div class="form-group">
+            <label>Structural Description</label>
+            <textarea formControlName="description" rows="3" placeholder="Describe layout specs..."></textarea>
+          </div>
+
+          <!-- New Fields: Address, Latitude, Longitude -->
+          <div class="form-group">
+            <label>Address *</label>
+            <input type="text" formControlName="address" placeholder="Enter building address" />
+          </div>
+
+          <div class="coords-row">
+            <div class="form-group">
+              <label>Latitude * (Readonly)</label>
+              <input type="text" formControlName="latitude" readonly placeholder="Click map or search" />
+            </div>
+            <div class="form-group">
+              <label>Longitude * (Readonly)</label>
+              <input type="text" formControlName="longitude" readonly placeholder="Click map or search" />
+            </div>
+          </div>
+
+          <!-- Google Maps Integration with Search Box -->
+          <div class="map-search-group">
+            <label style="font-size: 0.85rem; font-weight: 600; color: var(--color-text-muted); display: block; margin-bottom: 0.35rem;">Search Location *</label>
+            <input 
+              #searchBox
+              type="text" 
+              placeholder="Search for a location, area or building..." 
+            />
+          </div>
+
+          <div class="map-container">
+            <google-map 
+              [center]="mapCenter" 
+              [zoom]="mapZoom" 
+              [options]="mapOptions" 
+              (mapClick)="onMapClick($event)"
+            >
+              @if (markerPosition) {
+                <map-marker [position]="markerPosition"></map-marker>
+              }
+            </google-map>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-close" (click)="closeForm()">Cancel</button>
+            <button type="submit" class="btn-submit" [disabled]="buildingForm.invalid">
+              {{ isEditMode ? 'Save Changes' : 'Create Block' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- List -->
+  @if (isLoading) {
+    <div class="loading">Loading structural blocks...</div>
+  } @else {
+    <div class="table-container">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Block Name</th>
+            <th>Project ID</th>
+            <th>Total Floors</th>
+            <th>Address</th>
+            <th>Location Coordinates</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of buildings; track b.id) {
+            <tr>
+              <td><strong>{{ b.name }}</strong></td>
+              <td>Project #{{ b.projectId }}</td>
+              <td>{{ b.totalFloors }} Floors</td>
+              <td>{{ b.address || '-' }}</td>
+              <td>
+                @if (b.latitude && b.longitude) {
+                  <span style="font-size: 0.85rem; color: var(--color-text-muted);">
+                    {{ b.latitude | number:'1.4-4' }}, {{ b.longitude | number:'1.4-4' }}
+                  </span>
+                } @else {
+                  -
+                }
+              </td>
+              <td>{{ b.description }}</td>
+              <td>
+                <button class="btn-edit" (click)="openEditForm(b)">Edit</button>
+                <button class="btn-delete" (click)="onDelete(b.id!)">Delete</button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty-state">No buildings found. Click Add Building to create one.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

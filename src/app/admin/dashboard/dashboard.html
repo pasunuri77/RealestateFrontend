@@ -1,0 +1,53 @@
+<div class="admin-dashboard">
+  <div class="dashboard-header">
+    <h1>Construction Dashboard Overview</h1>
+    <p>Operational summary and request queue statistics.</p>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading">Calculating analytics...</div>
+  } @else {
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="material-icons icon">architecture</span>
+        <div>
+          <h3>Total Projects</h3>
+          <p class="val">{{ projectCount }}</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="material-icons icon">storefront</span>
+        <div>
+          <h3>Shop Units</h3>
+          <p class="val">{{ unitCount }}</p>
+        </div>
+      </div>
+      <div class="stat-card warning">
+        <span class="material-icons icon">description</span>
+        <div>
+          <h3>Lease Requests</h3>
+          <p class="val">{{ pendingLeasesCount }} Pending</p>
+        </div>
+      </div>
+      <div class="stat-card accent">
+        <span class="material-icons icon">monetization_on</span>
+        <div>
+          <h3>Purchase Offers</h3>
+          <p class="val">{{ purchaseRequestsCount }} Total</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Queues -->
+    <div class="queues-container">
+      <div class="queue-card">
+        <div class="card-header">
+          <h2>Recent Actions Required</h2>
+          <button routerLink="/admin/lease-requests" class="btn-link">View All Lease Requests</button>
+        </div>
+        <p class="desc">Please approve or decline pending commercial shop lease applications to assign occupancy states.</p>
+      </div>
+    </div>
+  }
+</div>

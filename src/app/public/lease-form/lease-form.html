@@ -1,0 +1,110 @@
+<div class="lease-form-page">
+  <div class="container">
+    <div class="form-card">
+      <div class="header">
+        <h2>Commercial Lease Application</h2>
+        @if (unit) {
+          <p class="unit-ref">Applying for Unit: <strong>{{ unit.unitNumber }}</strong> | Area: {{ unit.areaSqft }} Sq.Ft</p>
+        }
+      </div>
+
+      @if (errorMessage) {
+        <div class="error-alert">{{ errorMessage }}</div>
+      }
+      @if (successMessage) {
+        <div class="success-alert">{{ successMessage }}</div>
+      }
+
+      <form [formGroup]="leaseForm" (ngSubmit)="onSubmit()" class="form-body">
+        <div class="form-group">
+          <label for="customerName">Full Name *</label>
+          <input 
+            type="text" 
+            id="customerName" 
+            formControlName="customerName" 
+            placeholder="Rahul Sharma"
+            [class.error]="isFieldInvalid('customerName')"
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email" 
+              placeholder="name&#64;company.com"
+              [class.error]="isFieldInvalid('email')"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone Number *</label>
+            <input 
+              type="tel" 
+              id="phone" 
+              formControlName="phone" 
+              placeholder="10-digit mobile number"
+              [class.error]="isFieldInvalid('phone')"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="businessType">Business Category *</label>
+            <input 
+              type="text" 
+              id="businessType" 
+              formControlName="businessType" 
+              placeholder="e.g. Retail, Tech Startup, Cafe"
+              [class.error]="isFieldInvalid('businessType')"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="leaseType">Lease Duration Term *</label>
+            <select id="leaseType" formControlName="leaseType">
+              <option value="12 Months">12 Months (1 Year)</option>
+              <option value="24 Months">24 Months (2 Years)</option>
+              <option value="36 Months">36 Months (3 Years)</option>
+              <option value="60 Months">60 Months (5 Years)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="preferredStartDate">Preferred Start Date *</label>
+          <input 
+            type="date" 
+            id="preferredStartDate" 
+            formControlName="preferredStartDate"
+            [class.error]="isFieldInvalid('preferredStartDate')"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="message">Describe your operations / special fitout requests</label>
+          <textarea 
+            id="message" 
+            formControlName="message" 
+            rows="4" 
+            placeholder="Details of business operations and space modification requests..."
+          ></textarea>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn-cancel" [routerLink]="['/units', unitId]">Cancel</button>
+          <button type="submit" class="btn-submit" [disabled]="leaseForm.invalid || isLoading">
+            @if (isLoading) {
+              <span>Submitting request...</span>
+            } @else {
+              <span>Submit Lease Application</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
