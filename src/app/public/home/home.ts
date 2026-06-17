@@ -129,11 +129,13 @@ export class PublicHomeComponent implements OnInit {
 
   // Getters for aggregated stats
   get completedProjectsCount(): number {
-    return this.allProjects.filter(p => (p.status || '').toUpperCase() === 'COMPLETED').length || 24; // fallback to user spec if empty
+    if (this.isLoadingProjects) return 24;
+    return this.allProjects.filter(p => (p.status || '').toUpperCase() === 'COMPLETED').length;
   }
 
   get ongoingProjectsCount(): number {
-    return this.allProjects.filter(p => (p.status || '').toUpperCase() === 'ONGOING').length || 12; // fallback to user spec if empty
+    if (this.isLoadingProjects) return 12;
+    return this.allProjects.filter(p => (p.status || '').toUpperCase() === 'ONGOING').length;
   }
 
   get totalBuildingsCount(): number {
@@ -142,6 +144,11 @@ export class PublicHomeComponent implements OnInit {
 
   get availableUnitsCount(): number {
     return this.allUnits.length || 45;
+  }
+
+  get upcomingProjectsCount(): number {
+    if (this.isLoadingProjects) return 8;
+    return this.allProjects.filter(p => (p.status || '').toUpperCase() === 'UPCOMING').length;
   }
 
   getBuildingCountForProject(projectId: number): number {
