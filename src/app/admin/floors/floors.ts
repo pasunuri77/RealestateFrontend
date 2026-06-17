@@ -77,6 +77,7 @@ export class AdminFloorsComponent implements OnInit {
       units: ''
     });
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   openEditForm(f: Floor) {
@@ -90,10 +91,12 @@ export class AdminFloorsComponent implements OnInit {
       units: f.units
     });
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   closeForm() {
     this.showForm = false;
+    this.cdr.detectChanges();
   }
 
   onSubmit() {

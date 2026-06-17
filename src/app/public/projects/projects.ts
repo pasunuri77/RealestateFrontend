@@ -46,5 +46,6 @@ export class PublicProjectsComponent implements OnInit {
     } else {
       this.filteredProjects = this.projects.filter(p => p.status?.toUpperCase() === status.toUpperCase());
     }
+    this.cdr.detectChanges();
   }
 }

@@ -77,6 +77,7 @@ export class AdminBuildingsComponent implements OnInit {
       totalFloors: 1
     });
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   openEditForm(b: Building) {
@@ -90,10 +91,12 @@ export class AdminBuildingsComponent implements OnInit {
       description: b.description
     });
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   closeForm() {
     this.showForm = false;
+    this.cdr.detectChanges();
   }
 
   onSubmit() {

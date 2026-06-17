@@ -55,10 +55,12 @@ export class AdminShopUnitsComponent implements OnInit {
   ngOnInit() {
     this.loadShopUnits();
     this.loadMetadata();
+    this.cdr.detectChanges();
   }
 
   loadShopUnits() {
     this.isLoading = true;
+    this.cdr.detectChanges();
     this.shopUnitService.getShopUnits().subscribe({
       next: (data) => {
         this.units = data;
@@ -122,6 +124,7 @@ export class AdminShopUnitsComponent implements OnInit {
       maintenanceCharges: 0
     });
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   openEditForm(u: ShopUnit) {
@@ -144,10 +147,12 @@ export class AdminShopUnitsComponent implements OnInit {
       maintenanceCharges: u.maintenanceCharges
     });
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   closeForm() {
     this.showForm = false;
+    this.cdr.detectChanges();
   }
 
   onSubmit() {

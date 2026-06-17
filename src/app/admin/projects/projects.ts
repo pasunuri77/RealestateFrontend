@@ -48,6 +48,7 @@ export class AdminProjectsComponent implements OnInit {
 
   ngOnInit() {
     this.loadProjects();
+    this.cdr.detectChanges();
   }
 
   loadProjects() {
@@ -78,6 +79,7 @@ export class AdminProjectsComponent implements OnInit {
     this.markerPosition = null;
     this.mapZoom = 12;
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   openEditForm(project: Project) {
@@ -107,10 +109,12 @@ export class AdminProjectsComponent implements OnInit {
       this.mapZoom = 12;
     }
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   closeForm() {
     this.showForm = false;
+    this.cdr.detectChanges();
   }
 
   onSubmit() {

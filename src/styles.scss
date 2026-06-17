@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import "leaflet/dist/leaflet.css";
 
 // Design Theme Variables
 :root {
@@ -155,4 +156,18 @@ button, input, textarea, select {
     }
   }
 }
+
+/* --- Google Maps Development Overrides --- */
+.gm-err-container,
+.gm-err-icon,
+.gm-err-title,
+.gm-err-message,
+.gm-style-moc,
+.gm-style-cc,
+.gmnoprint,
+a[href*="google.com/maps"],
+a[href*="maps.google.com"] {
+  display: none !important;
+}
+
 

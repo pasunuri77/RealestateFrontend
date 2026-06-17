@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -13,19 +13,23 @@ import { AuthService } from '../../core/services/auth.service';
 export class NavbarComponent {
   authService = inject(AuthService);
   router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
   isMobileMenuOpen = false;
 
   toggleMobileMenu() {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
+    this.cdr.detectChanges();
   }
 
   closeMobileMenu() {
     this.isMobileMenuOpen = false;
+    this.cdr.detectChanges();
   }
 
   onLogout() {
     this.closeMobileMenu();
     this.authService.logout();
     this.router.navigate(['/auth/login']);
+    this.cdr.detectChanges();
   }
 }
