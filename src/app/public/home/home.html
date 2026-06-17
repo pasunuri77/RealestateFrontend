@@ -163,26 +163,22 @@
                   </div>
                   <h3>{{ project.name }}</h3>
                   <p class="address-text"><span class="material-icons">place</span> {{ project.location }}</p>
-                  
-                  <!-- Property Specs -->
-                  <div class="specs-grid">
-                    @if (project.availableShops) {
-                      <span class="spec-item"><span class="material-icons">storefront</span> {{ project.availableShops }} Shops</span>
-                    }
-                    @if (project.availableOffices) {
-                      <span class="spec-item"><span class="material-icons">domain</span> {{ project.availableOffices }} Offices</span>
-                    }
-                    @if (project.availableFlats) {
-                      <span class="spec-item"><span class="material-icons">apartment</span> {{ project.availableFlats }} Flats</span>
-                    }
-                  </div>
 
-                  <div class="card-footer-row">
-                    <div class="price-box">
-                      <span class="price-label">Starting Price</span>
-                      <strong class="price-val">₹{{ (project.startingPrice || 0) | number }}</strong>
-                    </div>
-                    <button class="btn-card-details" [routerLink]="['/projects', project.id]">Details</button>
+                  <!-- Description -->
+                  <p class="project-desc-text" style="font-size: 0.8rem; color: var(--color-text-muted); margin: 0.25rem 0 0.5rem 0; line-height: 1.4;">
+                    {{ project.description }}
+                  </p>
+
+                  <!-- Dates -->
+                  <div class="project-dates" style="display: flex; gap: 1rem; font-size: 0.75rem; color: var(--color-text-light); margin-top: auto; flex-wrap: wrap;">
+                    <span style="display: flex; align-items: center; gap: 0.2rem;">
+                      <span class="material-icons" style="font-size: 0.9rem; color: var(--color-primary);">today</span>
+                      Start: {{ project.startDate | date:'mediumDate' }}
+                    </span>
+                    <span style="display: flex; align-items: center; gap: 0.2rem;">
+                      <span class="material-icons" style="font-size: 0.9rem; color: var(--color-primary);">event_available</span>
+                      End: {{ (project.completedDate || project.expectedCompletionDate) | date:'mediumDate' }}
+                    </span>
                   </div>
                 </div>
               </div>
