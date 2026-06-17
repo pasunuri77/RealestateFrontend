@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Floor } from '../../models/floor.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FloorService {
-  private readonly apiUrl = 'http://localhost:8080/api/floors';
+  private readonly apiUrl = `${environment.apiUrl}/floors`;
 
   constructor(private http: HttpClient) {}
 
