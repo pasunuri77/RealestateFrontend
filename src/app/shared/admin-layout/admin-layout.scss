@@ -4,6 +4,27 @@
   background: var(--color-bg-light);
 }
 
+.sidebar-backdrop {
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: block;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: var(--transition-smooth);
+    
+    &.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+}
+
 // Sidebar
 .sidebar {
   width: 260px;

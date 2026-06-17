@@ -1,4 +1,7 @@
 <div class="admin-wrapper">
+  <!-- Sidebar Backdrop overlay for mobile screens -->
+  <div class="sidebar-backdrop" [class.show]="isSidebarOpen" (click)="isSidebarOpen = false"></div>
+
   <!-- Sidebar -->
   <aside class="sidebar" [class.open]="isSidebarOpen">
     <div class="sidebar-header">
@@ -6,7 +9,7 @@
       <span class="logo-text">Admin <span class="highlight">Portal</span></span>
     </div>
 
-    <nav class="sidebar-nav">
+    <nav class="sidebar-nav" (click)="isSidebarOpen = false">
       <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
         <span class="material-icons item-icon">dashboard</span>
         <span class="item-label">Dashboard</span>
@@ -37,7 +40,7 @@
       </a>
     </nav>
 
-    <div class="sidebar-footer">
+    <div class="sidebar-footer" (click)="isSidebarOpen = false">
       <a routerLink="/" class="btn-home">
         <span class="material-icons item-icon">public</span>
         <span class="item-label">Public Site</span>
