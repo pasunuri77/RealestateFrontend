@@ -19,7 +19,9 @@
             <th>Offered Price</th>
             <th>Proposal/Message</th>
             <th>Date Received</th>
-            <th>Actions</th>
+            @if (authService.isAdmin()) {
+              <th>Actions</th>
+            }
           </tr>
         </thead>
         <tbody>
@@ -33,13 +35,15 @@
               <td><strong class="price-accent">₹{{ p.budget | number }}</strong></td>
               <td class="msg-col">{{ p.message }}</td>
               <td>{{ p.createdAt | date:'short' }}</td>
-              <td>
-                <button class="btn-delete" (click)="onDelete(p.id!)">Remove</button>
-              </td>
+              @if (authService.isAdmin()) {
+                <td>
+                  <button class="btn-delete" (click)="onDelete(p.id!)">Remove</button>
+                </td>
+              }
             </tr>
           } @empty {
             <tr>
-              <td colspan="6" class="empty-state">No purchase requests submitted yet.</td>
+              <td [attr.colspan]="authService.isAdmin() ? 6 : 5" class="empty-state">No purchase requests submitted yet.</td>
             </tr>
           }
         </tbody>

@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LeaseService } from '../../core/services/lease.service';
 import { LeaseRequest } from '../../models/lease-request.model';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-admin-lease-requests',
@@ -13,6 +14,7 @@ import { LeaseRequest } from '../../models/lease-request.model';
 export class AdminLeaseRequestsComponent implements OnInit {
   private leaseService = inject(LeaseService);
   private cdr = inject(ChangeDetectorRef);
+  authService = inject(AuthService);
 
   leases: LeaseRequest[] = [];
   isLoading = true;

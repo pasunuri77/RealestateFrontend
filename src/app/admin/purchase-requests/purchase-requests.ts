@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PurchaseService } from '../../core/services/purchase.service';
 import { PurchaseRequest } from '../../models/purchase-request.model';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-admin-purchase-requests',
@@ -13,6 +14,7 @@ import { PurchaseRequest } from '../../models/purchase-request.model';
 export class AdminPurchaseRequestsComponent implements OnInit {
   private purchaseService = inject(PurchaseService);
   private cdr = inject(ChangeDetectorRef);
+  authService = inject(AuthService);
 
   purchases: PurchaseRequest[] = [];
   isLoading = true;
