@@ -34,15 +34,23 @@
           <!-- Buildings List -->
           <div class="buildings-section card">
             <h2>Buildings & Blocks</h2>
+            <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1rem;">Click a building to filter available units.</p>
             @if (buildings.length === 0) {
               <p class="no-records">No buildings registered under this project yet.</p>
             } @else {
               <div class="buildings-list">
                 @for (b of buildings; track b.id) {
-                  <div class="building-item">
+                  <div class="building-item" (click)="selectBuilding(b.id!)" [class.selected]="selectedBuildingId === b.id" style="cursor: pointer; transition: all 0.2s ease;">
                     <div class="building-info">
                       <h3>{{ b.name }}</h3>
                       <p>{{ b.description }}</p>
+                      <div class="building-units-count" style="margin-top: 0.5rem; font-size: 0.85rem; font-weight: 600;">
+                        @if (getUnitCountForBuilding(b.id!) > 0) {
+                          <span style="color: var(--color-primary);"><span class="material-icons" style="font-size: 0.95rem; vertical-align: middle;">corporate_fare</span> {{ getUnitCountForBuilding(b.id!) }} Units Present</span>
+                        } @else {
+                          <span style="color: #ef4444;"><span class="material-icons" style="font-size: 0.95rem; vertical-align: middle;">error_outline</span> No units found</span>
+                        }
+                      </div>
                     </div>
                     <div class="building-stat">
                       <span class="stat-label">Floors</span>
@@ -59,11 +67,11 @@
         <div class="units-section">
           <div class="card">
             <h2>Available Shop & Office Units</h2>
-            @if (units.length === 0) {
-              <p class="no-records">No units available currently in this development.</p>
+            @if (getFilteredUnits().length === 0) {
+              <p class="no-records">No units found.</p>
             } @else {
               <div class="units-list">
-                @for (u of units; track u.shopOrUnitId) {
+                @for (u of getFilteredUnits(); track u.shopOrUnitId) {
                   <div class="unit-item">
                     <div class="unit-info">
                       <h3>Unit {{ u.unitNumber }}</h3>

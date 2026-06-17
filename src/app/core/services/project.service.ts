@@ -35,4 +35,8 @@ export class ProjectService {
   deleteProject(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
+
+  getNearbyProjects(latitude: number, longitude: number, radius: number): Observable<Project[]> {
+    return this.http.get<Project[]>(`${this.apiUrl}/nearby?latitude=${latitude}&longitude=${longitude}&radius=${radius}`);
+  }
 }

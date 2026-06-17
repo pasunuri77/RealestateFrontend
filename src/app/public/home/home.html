@@ -6,46 +6,196 @@
       <span class="hero-tag">Premium Construction & Commercial Leasing</span>
       <h1 class="hero-title">Build. Lease.<br>Own. Grow.</h1>
       <p class="hero-subtitle">
-        Explore completed, ongoing, and upcoming real estate projects with premium commercial spaces and units available for lease and sale.
+        Explore completed, ongoing, and upcoming real estate projects with premium commercial spaces and units.
       </p>
       <div class="hero-actions">
         <button class="btn btn-primary-gold" (click)="scrollToSection('featured-projects')">View Projects</button>
-        <button class="btn btn-secondary-outline" (click)="scrollToSection('available-units')">Explore Available Units</button>
+        <button class="btn btn-secondary-outline" (click)="scrollToSection('available-units')">Explore Units</button>
+      </div>
+
+      <!-- Compact Search Bar in Hero -->
+      <div class="hero-search-wrapper">
+        <span class="material-icons search-icon">location_on</span>
+        <input 
+          #searchBox 
+          type="text" 
+          class="hero-search-input" 
+          placeholder="Search City, Area, Landmark or Address to locate on map..." 
+        />
+      </div>
+    </div>
+
+    <!-- Quick Stats Grid in Hero -->
+    <div class="hero-stats-grid">
+      <div class="hero-stat-card completed">
+        <span class="stat-count">{{ completedProjectsCount }}</span>
+        <span class="stat-label">Completed Projects</span>
+      </div>
+      <div class="hero-stat-card ongoing">
+        <span class="stat-count">{{ ongoingProjectsCount }}</span>
+        <span class="stat-label">Ongoing Projects</span>
+      </div>
+      <div class="hero-stat-card units">
+        <span class="stat-count">{{ availableUnitsCount }}</span>
+        <span class="stat-label">Available Units</span>
+      </div>
+      <div class="hero-stat-card buildings">
+        <span class="stat-count">{{ totalBuildingsCount }}</span>
+        <span class="stat-label">Total Buildings</span>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Status Overview Section -->
-<section class="status-section">
-  <div class="section-container">
-    <div class="status-grid">
-      <div class="status-card completed">
-        <div class="card-header">
-          <span class="project-count">24</span>
-          <span class="status-badge">Completed</span>
-        </div>
-        <h3 class="card-title">Completed Spaces</h3>
-        <p class="card-desc">Fully operational corporate complexes and retail plazas.</p>
-        <button class="btn-view" (click)="scrollToSection('featured-projects')">Explore Projects →</button>
+<!-- Map Search Section -->
+<section id="map-search-section" class="map-search-section">
+  <div class="section-container-fluid">
+    <div class="section-header-compact">
+      <span class="section-tag">Interactive Finder</span>
+      <h2 class="section-title">Search Projects & Properties on Map</h2>
+    </div>
+
+    <div class="map-search-layout">
+      <!-- Left Side: Interactive Map (45%) -->
+      <div class="map-wrapper">
+        <google-map 
+          [center]="mapCenter" 
+          [zoom]="mapZoom" 
+          [options]="mapOptions"
+          (mapDragend)="onMapDragend()"
+          (zoomChanged)="onZoomChanged()"
+          width="100%"
+          height="100%"
+        >
+          @for (project of filteredProjects; track project.id) {
+            <map-marker 
+              #markerRef="mapMarker"
+              [position]="{ lat: project.latitude || 0, lng: project.longitude || 0 }"
+              [options]="getMarkerOptions(project)"
+              (mapClick)="onMarkerClick(markerRef, project)"
+            ></map-marker>
+          }
+        </google-map>
       </div>
-      <div class="status-card ongoing">
-        <div class="card-header">
-          <span class="project-count">12</span>
-          <span class="status-badge">Ongoing</span>
+
+      <!-- Right Side: Filters and Results (55%) -->
+      <div class="results-wrapper">
+        <!-- Filters Header (Sticky) -->
+        <div class="filters-container">
+          <div class="filter-group">
+            <label>Project Type</label>
+            <select [(ngModel)]="filterProjectType" (change)="applyFilters()">
+              <option value="ALL">All Types</option>
+              <option value="RESIDENTIAL">Residential</option>
+              <option value="COMMERCIAL">Commercial</option>
+              <option value="MIXED">Mixed Use</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Unit Type</label>
+            <select [(ngModel)]="filterUnitType" (change)="applyFilters()">
+              <option value="ALL">All Units</option>
+              <option value="SHOP">Shops</option>
+              <option value="OFFICE">Offices</option>
+              <option value="FLAT">Flats</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Price Range</label>
+            <select [(ngModel)]="filterPriceRange" (change)="applyFilters()">
+              <option value="ALL">Any Price</option>
+              <option value="UNDER_10L">Under ₹10L</option>
+              <option value="10L_50L">₹10L - ₹50L</option>
+              <option value="50L_1C">₹50L - ₹1C</option>
+              <option value="ABOVE_1C">Above ₹1C</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Radius</label>
+            <select [(ngModel)]="filterRadius" (change)="applyFilters()">
+              <option [ngValue]="5">5 km</option>
+              <option [ngValue]="10">10 km</option>
+              <option [ngValue]="20">20 km</option>
+              <option [ngValue]="50">50 km</option>
+            </select>
+          </div>
+
+          <div class="filter-group reset-group">
+            <button type="button" class="btn-reset-filters" (click)="resetFilters()">
+              <span class="material-icons">restart_alt</span> Reset
+            </button>
+          </div>
         </div>
-        <h3 class="card-title">Under Construction</h3>
-        <p class="card-desc">Modern townships and skyscrapers built with green standards.</p>
-        <button class="btn-view" (click)="scrollToSection('featured-projects')">Explore Projects →</button>
-      </div>
-      <div class="status-card upcoming">
-        <div class="card-header">
-          <span class="project-count">8</span>
-          <span class="status-badge">Upcoming</span>
+
+        <!-- Results Listing -->
+        <div class="results-list">
+          @if (isSearchingNearby) {
+            <!-- Skeleton Loader -->
+            @for (item of [1, 2, 3]; track item) {
+              <div class="skeleton-card">
+                <div class="skeleton-img"></div>
+                <div class="skeleton-info">
+                  <div class="skeleton-line title"></div>
+                  <div class="skeleton-line text"></div>
+                  <div class="skeleton-line text short"></div>
+                </div>
+              </div>
+            }
+          } @else {
+            @for (project of filteredProjects; track project.id) {
+              <div 
+                [id]="'project-card-' + project.id"
+                class="nearby-project-card"
+                [class.highlighted]="highlightedProjectId === project.id"
+                (click)="onCardClick(project)"
+              >
+                <img [src]="project.projectImage || '/metro-plaza.png'" alt="Project Cover" class="card-img" />
+                
+                <div class="nearby-card-info">
+                  <div class="card-header-row">
+                    <span class="type-badge">{{ project.projectType }}</span>
+                    @if (project.distance !== undefined) {
+                      <span class="distance-badge"><span class="material-icons">navigation</span> {{ project.distance }} km</span>
+                    }
+                  </div>
+                  <h3>{{ project.name }}</h3>
+                  <p class="address-text"><span class="material-icons">place</span> {{ project.location }}</p>
+                  
+                  <!-- Property Specs -->
+                  <div class="specs-grid">
+                    @if (project.availableShops) {
+                      <span class="spec-item"><span class="material-icons">storefront</span> {{ project.availableShops }} Shops</span>
+                    }
+                    @if (project.availableOffices) {
+                      <span class="spec-item"><span class="material-icons">domain</span> {{ project.availableOffices }} Offices</span>
+                    }
+                    @if (project.availableFlats) {
+                      <span class="spec-item"><span class="material-icons">apartment</span> {{ project.availableFlats }} Flats</span>
+                    }
+                  </div>
+
+                  <div class="card-footer-row">
+                    <div class="price-box">
+                      <span class="price-label">Starting Price</span>
+                      <strong class="price-val">₹{{ (project.startingPrice || 0) | number }}</strong>
+                    </div>
+                    <button class="btn-card-details" [routerLink]="['/projects', project.id]">Details</button>
+                  </div>
+                </div>
+              </div>
+            } @empty {
+              <!-- No Results Empty State -->
+              <div class="no-results-container">
+                <span class="material-icons empty-icon">map</span>
+                <h4>No Projects Found Nearby</h4>
+                <p>Try expanding your search radius, adjusting filters, or moving the map to another area.</p>
+              </div>
+            }
+          }
         </div>
-        <h3 class="card-title">Future Blueprints</h3>
-        <p class="card-desc">Upcoming residential zones and mixed-use commercial centers.</p>
-        <button class="btn-view" (click)="scrollToSection('featured-projects')">Explore Projects →</button>
       </div>
     </div>
   </div>
@@ -63,7 +213,7 @@
     @if (isLoadingProjects) {
       <div class="loading">Loading projects from backend API...</div>
     } @else {
-      <div class="cards-grid">
+      <div class="cards-grid projects-grid">
         @for (project of projects; track project.id) {
           <div class="project-card">
             <div class="image-wrapper">
@@ -78,7 +228,20 @@
               </div>
               <h3 class="project-name">{{ project.name }}</h3>
               <p class="project-desc">{{ project.description }}</p>
-              <button class="btn-card-action" [routerLink]="['/projects', project.id]">View Project Details</button>
+              
+              <!-- Project Stats -->
+              <div class="project-stats" style="display: flex; gap: 1rem; margin-bottom: 1rem; font-size: 0.85rem; color: var(--color-text-muted);">
+                <span style="display: flex; align-items: center; gap: 0.25rem;">
+                  <span class="material-icons" style="font-size: 1.15rem; color: var(--color-primary);">domain</span>
+                  <strong>{{ getBuildingCountForProject(project.id!) }}</strong> Buildings
+                </span>
+                <span style="display: flex; align-items: center; gap: 0.25rem;">
+                  <span class="material-icons" style="font-size: 1.15rem; color: var(--color-primary);">storefront</span>
+                  <strong>{{ getUnitCountForProject(project.id!) }}</strong> Units
+                </span>
+              </div>
+
+              <button class="btn-card-action" [routerLink]="['/projects', project.id]">View Details</button>
             </div>
           </div>
         } @empty {
@@ -101,7 +264,7 @@
     @if (isLoadingUnits) {
       <div class="loading">Loading units from backend API...</div>
     } @else {
-      <div class="cards-grid">
+      <div class="cards-grid units-grid">
         @for (unit of units; track unit.shopOrUnitId) {
           <div class="unit-card">
             <div class="image-wrapper">
@@ -151,23 +314,31 @@
     <div class="features-grid">
       <div class="feature-card">
         <div class="icon-container"><span class="material-icons">architecture</span></div>
-        <h3>Trusted Construction</h3>
-        <p>Over two decades of structural integrity and premium finishes.</p>
+        <div class="feature-text">
+          <h3>Trusted Construction</h3>
+          <p>Over two decades of structural integrity and premium finishes.</p>
+        </div>
       </div>
       <div class="feature-card">
         <div class="icon-container"><span class="material-icons">place</span></div>
-        <h3>Prime Locations</h3>
-        <p>Developments centered in high-density corridors with heavy transit access.</p>
+        <div class="feature-text">
+          <h3>Prime Locations</h3>
+          <p>Developments centered in high-density corridors with heavy transit access.</p>
+        </div>
       </div>
       <div class="feature-card">
         <div class="icon-container"><span class="material-icons">vpn_key</span></div>
-        <h3>Lease and Sale Options</h3>
-        <p>Tailored financial models with customized options for businesses.</p>
+        <div class="feature-text">
+          <h3>Lease and Sale Options</h3>
+          <p>Tailored financial models with customized options for businesses.</p>
+        </div>
       </div>
       <div class="feature-card">
         <div class="icon-container"><span class="material-icons">visibility</span></div>
-        <h3>Transparent Process</h3>
-        <p>Open progress reviews, legal checkmarks, and zero hidden charges.</p>
+        <div class="feature-text">
+          <h3>Transparent Process</h3>
+          <p>Open progress reviews, legal checkmarks, and zero hidden charges.</p>
+        </div>
       </div>
     </div>
   </div>

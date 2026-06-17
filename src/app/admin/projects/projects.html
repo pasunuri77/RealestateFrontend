@@ -54,6 +54,39 @@
             <textarea formControlName="description" rows="3" placeholder="Provide construction layout details..."></textarea>
           </div>
 
+          <div class="form-row">
+            <div class="form-group">
+              <label>Latitude * (Readonly)</label>
+              <input type="text" formControlName="latitude" readonly placeholder="Click map to set" />
+            </div>
+            <div class="form-group">
+              <label>Longitude * (Readonly)</label>
+              <input type="text" formControlName="longitude" readonly placeholder="Click map to set" />
+            </div>
+          </div>
+
+          <!-- Google Maps Integration -->
+          <div class="map-container" style="height: 250px; margin-bottom: 1.25rem; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0;">
+            <google-map 
+              [center]="mapCenter" 
+              [zoom]="mapZoom" 
+              [options]="mapOptions" 
+              (mapClick)="onMapClick($event)"
+              width="100%"
+              height="100%"
+            >
+              @if (markerPosition) {
+                <map-marker [position]="markerPosition"></map-marker>
+              }
+            </google-map>
+          </div>
+
+          @if (errorMessage) {
+            <div class="error-alert" style="color: #ef4444; background: #fee2e2; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem;">
+              {{ errorMessage }}
+            </div>
+          }
+
           <div class="modal-actions">
             <button type="button" class="btn-close" (click)="closeForm()">Cancel</button>
             <button type="submit" class="btn-submit" [disabled]="projectForm.invalid">
@@ -75,6 +108,7 @@
           <tr>
             <th>Project Name</th>
             <th>Location</th>
+            <th>Coordinates</th>
             <th>Type</th>
             <th>Status</th>
             <th>Actions</th>
@@ -83,9 +117,18 @@
         <tbody>
           @for (p of projects; track p.id) {
             <tr>
-              <td><strong>{{ p.name }}</strong></td>
-              <td>{{ p.location }}</td>
-              <td>{{ p.projectType }}</td>
+               <td><strong>{{ p.name }}</strong></td>
+               <td>{{ p.location }}</td>
+               <td>
+                 @if (p.latitude && p.longitude) {
+                   <span style="font-size: 0.85rem; color: var(--color-text-muted);">
+                     {{ p.latitude | number:'1.4-4' }}, {{ p.longitude | number:'1.4-4' }}
+                   </span>
+                 } @else {
+                   -
+                 }
+               </td>
+               <td>{{ p.projectType }}</td>
               <td><span class="status-badge" [class]="p.status.toLowerCase()">{{ p.status }}</span></td>
               <td>
                 <button class="btn-edit" (click)="openEditForm(p)">Edit</button>
@@ -94,7 +137,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="5" class="empty-state">No projects found. Create one.</td>
+              <td colspan="7" class="empty-state">No projects found. Create one.</td>
             </tr>
           }
         </tbody>

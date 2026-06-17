@@ -26,6 +26,7 @@ export class PublicProjectDetailComponent implements OnInit {
   buildings: Building[] = [];
   units: ShopUnit[] = [];
   isLoading = true;
+  selectedBuildingId: number | null = null;
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -73,5 +74,26 @@ export class PublicProjectDetailComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  selectBuilding(buildingId: number) {
+    // Toggle selection
+    if (this.selectedBuildingId === buildingId) {
+      this.selectedBuildingId = null;
+    } else {
+      this.selectedBuildingId = buildingId;
+    }
+    this.cdr.detectChanges();
+  }
+
+  getFilteredUnits(): ShopUnit[] {
+    if (this.selectedBuildingId === null) {
+      return this.units;
+    }
+    return this.units.filter(u => u.buildingId === this.selectedBuildingId);
+  }
+
+  getUnitCountForBuilding(buildingId: number): number {
+    return this.units.filter(u => u.buildingId === buildingId).length;
   }
 }
