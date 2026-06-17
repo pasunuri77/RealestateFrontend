@@ -220,4 +220,23 @@ export class AdminShopUnitsComponent implements OnInit {
     const buildingIds = this.buildings.map(b => b.id);
     return this.units.filter(u => !buildingIds.includes(u.buildingId));
   }
+
+  getFilteredFloors(): Floor[] {
+    const selectedBuildingId = this.unitForm.get('buildingId')?.value;
+    if (!selectedBuildingId) {
+      return [];
+    }
+    const bId = Number(selectedBuildingId);
+    return this.floors.filter(f => f.buildingId === bId);
+  }
+
+  onBuildingChange() {
+    const filtered = this.getFilteredFloors();
+    if (filtered.length > 0) {
+      this.unitForm.patchValue({ floorId: filtered[0].id });
+    } else {
+      this.unitForm.patchValue({ floorId: '' });
+    }
+    this.cdr.detectChanges();
+  }
 }

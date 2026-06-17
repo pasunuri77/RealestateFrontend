@@ -29,7 +29,7 @@
             </div>
             <div class="form-group">
               <label>Building Block *</label>
-              <select formControlName="buildingId">
+              <select formControlName="buildingId" (change)="onBuildingChange()">
                 @for (b of buildings; track b.id) {
                   <option [value]="b.id">{{ b.name }}</option>
                 }
@@ -41,7 +41,7 @@
             <div class="form-group">
               <label>Floor Level *</label>
               <select formControlName="floorId">
-                @for (f of floors; track f.id) {
+                @for (f of getFilteredFloors(); track f.id) {
                   <option [value]="f.id">{{ f.floorName }}</option>
                 }
               </select>
