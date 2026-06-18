@@ -21,20 +21,23 @@
           <div class="form-row">
             <div class="form-group">
               <label>Project *</label>
-              <select formControlName="projectId">
+              <select formControlName="projectId" (change)="onProjectChange()">
                 @for (p of projects; track p.id) {
                   <option [value]="p.id">{{ p.name }}</option>
                 }
               </select>
             </div>
-            <div class="form-group">
-              <label>Building Block *</label>
-              <select formControlName="buildingId" (change)="onBuildingChange()">
-                @for (b of buildings; track b.id) {
-                  <option [value]="b.id">{{ b.name }}</option>
-                }
-              </select>
-            </div>
+            @let filteredB = getFilteredBuildings();
+            @if (filteredB.length > 0) {
+              <div class="form-group">
+                <label>Building Block *</label>
+                <select formControlName="buildingId" (change)="onBuildingChange()">
+                  @for (b of filteredB; track b.id) {
+                    <option [value]="b.id">{{ b.name }}</option>
+                  }
+                </select>
+              </div>
+            }
           </div>
 
           <div class="form-row">
@@ -55,7 +58,7 @@
           <div class="form-row">
             <div class="form-group">
               <label>Unit Type *</label>
-              <select formControlName="unitType">
+              <select formControlName="UnitType">
                 <option value="SHOP">Shop</option>
                 <option value="OFFICE">Office</option>
                 <option value="FLAT">Flat</option>
@@ -91,27 +94,31 @@
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Monthly Rent (₹)</label>
-              <input type="number" formControlName="monthlyRent" />
+          @if (unitForm.get('availabilityType')?.value === 'LEASE' || unitForm.get('availabilityType')?.value === 'BOTH') {
+            <div class="form-row">
+              <div class="form-group">
+                <label>Monthly Rent (₹)</label>
+                <input type="number" formControlName="monthlyRent" />
+              </div>
+              <div class="form-group">
+                <label>Yearly Rent (₹)</label>
+                <input type="number" formControlName="yearlyRent" />
+              </div>
             </div>
-            <div class="form-group">
-              <label>Yearly Rent (₹)</label>
-              <input type="number" formControlName="yearlyRent" />
-            </div>
-          </div>
+          }
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Sale Price (₹)</label>
-              <input type="number" formControlName="salePrice" />
+          @if (unitForm.get('availabilityType')?.value === 'SALE' || unitForm.get('availabilityType')?.value === 'BOTH') {
+            <div class="form-row">
+              <div class="form-group">
+                <label>Sale Price (₹)</label>
+                <input type="number" formControlName="salePrice" />
+              </div>
+              <div class="form-group">
+                <label>Booking Deposit (₹)</label>
+                <input type="number" formControlName="bookingAmount" />
+              </div>
             </div>
-            <div class="form-group">
-              <label>Booking Deposit (₹)</label>
-              <input type="number" formControlName="bookingAmount" />
-            </div>
-          </div>
+          }
 
           <div class="form-row">
             <div class="form-group">
@@ -146,12 +153,12 @@
         </table>
       </div>
     } @else {
-      @for (b of buildings; track b.id) {
-        @if (getUnitsByBuilding(b.id!).length > 0) {
+      @for (f of floors; track f.id) {
+        @if (getUnitsByFloor(f.id!).length > 0) {
           <div class="building-units-section" style="margin-bottom: 2.5rem;">
             <h3 class="building-section-title" style="display: flex; align-items: center; gap: 0.5rem; color: var(--color-primary); font-size: 1.25rem; font-weight: 700; border-bottom: 2px solid var(--color-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
-              <span class="material-icons">corporate_fare</span>
-              {{ b.name }}
+              <span class="material-icons">layers</span>
+              {{ getProjectBuildingFloorName(f) }}
             </h3>
             <div class="table-container">
               <table class="admin-table">
@@ -167,7 +174,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (u of getUnitsByBuilding(b.id!); track u.shopOrUnitId) {
+                  @for (u of getUnitsByFloor(f.id!); track u.shopOrUnitId) {
                     <tr>
                       <td><strong>{{ u.unitNumber }}</strong></td>
                       <td>{{ u.unitType }}</td>

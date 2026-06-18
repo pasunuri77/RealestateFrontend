@@ -9,139 +9,172 @@
 
   <!-- inline Form Modal -->
   @if (showForm) {
-    <div class="form-modal">
-      <div class="modal-card">
-        <h2>{{ isEditMode ? 'Edit Project' : 'New Project' }}</h2>
-        <form [formGroup]="projectForm" (ngSubmit)="onSubmit()">
+  <div class="form-modal">
+    <div class="modal-card">
+      <h2>{{ isEditMode ? 'Edit Project' : 'New Project' }}</h2>
+      <form [formGroup]="projectForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label>Project Name *</label>
+          <input type="text" formControlName="name" placeholder="e.g. Green Heights residency" />
+        </div>
+        <div class="form-group">
+          <label>Location *</label>
+          <input type="text" formControlName="location" placeholder="e.g. Bangalore" />
+        </div>
+        <div class="form-row">
           <div class="form-group">
-            <label>Project Name *</label>
-            <input type="text" formControlName="name" placeholder="e.g. Green Heights residency" />
-          </div>
-          <div class="form-group">
-            <label>Location *</label>
-            <input type="text" formControlName="location" placeholder="e.g. Bangalore" />
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Type *</label>
-              <select formControlName="projectType">
-                <option value="COMMERCIAL">Commercial</option>
-                <option value="RESIDENTIAL">Residential</option>
-                <option value="MIXED_USE">Mixed Use</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Status *</label>
-              <select formControlName="status">
-                <option value="COMPLETED">Completed</option>
-                <option value="ONGOING">Ongoing</option>
-                <option value="UPCOMING">Upcoming</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Start Date *</label>
-              <input type="date" formControlName="startDate" />
-            </div>
-            <div class="form-group">
-              <label>Expected Completion *</label>
-              <input type="date" formControlName="expectedCompletionDate" />
-            </div>
+            <label>Type *</label>
+            <select formControlName="projectType">
+              <option value="COMMERCIAL">Commercial</option>
+              <option value="RESIDENTIAL">Residential</option>
+              <option value="MIXED_USE">Mixed Use</option>
+            </select>
           </div>
           <div class="form-group">
-            <label>Description</label>
-            <textarea formControlName="description" rows="3" placeholder="Provide construction layout details..."></textarea>
+            <label>Status *</label>
+            <select formControlName="status">
+              <option value="COMPLETED">Completed</option>
+              <option value="ONGOING">Ongoing</option>
+              <option value="UPCOMING">Upcoming</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Date *</label>
+            <input type="date" formControlName="startDate" />
+          </div>
+          <div class="form-group">
+            <label>Expected Completion *</label>
+            <input type="date" formControlName="expectedCompletionDate" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea formControlName="description" rows="3"
+            placeholder="Provide construction layout details..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Latitude * (Readonly)</label>
+            <input type="text" formControlName="latitude" readonly placeholder="Click map to set" />
+          </div>
+          <div class="form-group">
+            <label>Longitude * (Readonly)</label>
+            <input type="text" formControlName="longitude" readonly placeholder="Click map to set" />
+          </div>
+        </div>
+
+        <!-- Location Search Input -->
+        <div class="form-group" style="position: relative; margin-bottom: 1rem;">
+          <label>Search Address / Landmark</label>
+          <div class="search-input-container" style="position: relative;">
+            <span class="material-icons"
+              style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--color-primary); font-size: 1.25rem;">search</span>
+            <input type="text" placeholder="Type location to center on map..." [value]="searchQuery"
+              (input)="onSearchInput($event)" (keydown)="onSearchKeydown($event)" (blur)="onSearchBlur()"
+              style="padding-left: 2.5rem; width: 100%;" />
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Latitude * (Readonly)</label>
-              <input type="text" formControlName="latitude" readonly placeholder="Click map to set" />
-            </div>
-            <div class="form-group">
-              <label>Longitude * (Readonly)</label>
-              <input type="text" formControlName="longitude" readonly placeholder="Click map to set" />
-            </div>
-          </div>
-
-          <!-- Google Maps Integration -->
-          <div class="map-container" style="height: 250px; margin-bottom: 1.25rem; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0;">
-            <google-map 
-              [center]="mapCenter" 
-              [zoom]="mapZoom" 
-              [options]="mapOptions" 
-              (mapClick)="onMapClick($event)"
-              width="100%"
-              height="100%"
-            >
-              @if (markerPosition) {
-                <map-marker [position]="markerPosition"></map-marker>
-              }
-            </google-map>
-          </div>
-
-          @if (errorMessage) {
-            <div class="error-alert" style="color: #ef4444; background: #fee2e2; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem;">
-              {{ errorMessage }}
-            </div>
+          <!-- Autocomplete suggestions -->
+          @if (showSuggestions && (suggestions.length > 0 || isLoadingSuggestions || noSuggestionsFound)) {
+          <ul class="search-suggestions-dropdown"
+            style="position: absolute; left: 0; right: 0;top: 70px; background: var(--color-bg-white); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); max-height: 200px; overflow-y: auto; z-index: 1000; list-style: none; padding: 0.25rem 0; margin-top: 0.25rem;">
+            @if (isLoadingSuggestions) {
+            <li
+              style="padding: 0.5rem 1rem; color: var(--color-text-light); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+              <span class="material-icons rotating-icon"
+                style="font-size: 1rem; animation: spin 1.5s linear infinite;">sync</span> Loading...
+            </li>
+            }
+            @if (noSuggestionsFound && !isLoadingSuggestions) {
+            <li style="padding: 0.5rem 1rem; color: var(--color-text-light); font-size: 0.85rem;">No results found</li>
+            }
+            @for (item of suggestions; track item; let i = $index) {
+            <li [class.active]="i === activeSuggestionIndex" (mousedown)="selectSuggestion(item)"
+              (mouseenter)="activeSuggestionIndex = i"
+              style="padding: 0.5rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; border-bottom: 1px solid var(--color-border);">
+              <span class="material-icons" style="color: var(--color-accent); font-size: 1rem;">place</span>
+              <div
+                style="display: flex; flex-direction: column; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <span style="font-weight: 700; color: var(--color-text-dark);">{{ item.name }}</span>
+                <span style="font-size: 0.75rem; color: var(--color-text-light);">{{ formatDetails(item) }}</span>
+              </div>
+            </li>
+            }
+          </ul>
           }
+        </div>
 
-          <div class="modal-actions">
-            <button type="button" class="btn-close" (click)="closeForm()">Cancel</button>
-            <button type="submit" class="btn-submit" [disabled]="projectForm.invalid">
-              {{ isEditMode ? 'Save Changes' : 'Create Project' }}
-            </button>
-          </div>
-        </form>
-      </div>
+        <!-- Leaflet Map Integration -->
+        <div class="map-container"
+          style="height: 250px; margin-bottom: 1.25rem; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; position: relative;">
+          <div id="admin-map" style="width: 100%; height: 100%; z-index: 1;"></div>
+        </div>
+
+        @if (errorMessage) {
+        <div class="error-alert"
+          style="color: #ef4444; background: #fee2e2; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem;">
+          {{ errorMessage }}
+        </div>
+        }
+
+        <div class="modal-actions">
+          <button type="button" class="btn-close" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn-submit" [disabled]="projectForm.invalid">
+            {{ isEditMode ? 'Save Changes' : 'Create Project' }}
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
   }
 
   <!-- Projects Table List -->
   @if (isLoading) {
-    <div class="loading">Loading projects from database...</div>
+  <div class="loading">Loading projects from database...</div>
   } @else {
-    <div class="table-container">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Project Name</th>
-            <th>Location</th>
-            <th>Coordinates</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (p of projects; track p.id) {
-            <tr>
-               <td><strong>{{ p.name }}</strong></td>
-               <td>{{ p.location }}</td>
-               <td>
-                 @if (p.latitude && p.longitude) {
-                   <span style="font-size: 0.85rem; color: var(--color-text-muted);">
-                     {{ p.latitude | number:'1.4-4' }}, {{ p.longitude | number:'1.4-4' }}
-                   </span>
-                 } @else {
-                   -
-                 }
-               </td>
-               <td>{{ p.projectType }}</td>
-              <td><span class="status-badge" [class]="p.status.toLowerCase()">{{ p.status }}</span></td>
-              <td>
-                <button class="btn-edit" (click)="openEditForm(p)">Edit</button>
-                <button class="btn-delete" (click)="onDelete(p.id!)">Delete</button>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="7" class="empty-state">No projects found. Create one.</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+  <div class="table-container">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Project Name</th>
+          <th>Location</th>
+          <th>Coordinates</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of projects; track p.id) {
+        <tr>
+          <td><strong>{{ p.name }}</strong></td>
+          <td>{{ p.location }}</td>
+          <td>
+            @if (p.latitude && p.longitude) {
+            <span style="font-size: 0.85rem; color: var(--color-text-muted);">
+              {{ p.latitude | number:'1.4-4' }}, {{ p.longitude | number:'1.4-4' }}
+            </span>
+            } @else {
+            -
+            }
+          </td>
+          <td>{{ p.projectType }}</td>
+          <td><span class="status-badge" [class]="p.status.toLowerCase()">{{ p.status }}</span></td>
+          <td>
+            <button class="btn-edit" (click)="openEditForm(p)">Edit</button>
+            <button class="btn-delete" (click)="onDelete(p.id!)">Delete</button>
+          </td>
+        </tr>
+        } @empty {
+        <tr>
+          <td colspan="7" class="empty-state">No projects found. Create one.</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
   }
 </div>

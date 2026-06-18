@@ -147,4 +147,18 @@ export class AdminBuildingsComponent implements OnInit {
       });
     }
   }
+
+  getBuildingsByProject(projectId: number): Building[] {
+    return this.buildings.filter(b => b.projectId === projectId);
+  }
+
+  getUnassignedBuildings(): Building[] {
+    const projectIds = this.projects.map(p => p.id);
+    return this.buildings.filter(b => !projectIds.includes(b.projectId));
+  }
+
+  getProjectName(projectId: number): string {
+    const project = this.projects.find(p => p.id === projectId);
+    return project ? project.name : `Project #${projectId}`;
+  }
 }

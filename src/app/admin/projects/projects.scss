@@ -21,3 +21,16 @@
 .btn-edit { color: var(--color-primary); &:hover { text-decoration: underline; } }
 .btn-delete { color: #EF4444; &:hover { text-decoration: underline; } }
 .loading, .empty-state { text-align: center; padding: 2rem; color: var(--color-text-light); }
+
+// Autocomplete search styling
+.search-suggestions-dropdown {
+  li {
+    &.active {
+      background: var(--color-bg-light) !important;
+    }
+  }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

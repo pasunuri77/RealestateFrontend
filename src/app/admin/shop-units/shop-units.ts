@@ -41,7 +41,7 @@ export class AdminShopUnitsComponent implements OnInit {
     buildingId: ['', Validators.required],
     floorId: ['', Validators.required],
     unitNumber: ['', Validators.required],
-    unitType: ['OFFICE', Validators.required],
+    UnitType: ['OFFICE', Validators.required],
     areaSqft: ['', [Validators.required, Validators.min(1)]],
     availabilityType: ['LEASE', Validators.required],
     status: ['AVAILABLE', Validators.required],
@@ -55,6 +55,31 @@ export class AdminShopUnitsComponent implements OnInit {
   ngOnInit() {
     this.loadShopUnits();
     this.loadMetadata();
+    
+    // Auto-calculate yearly rent based on monthly rent input
+    this.unitForm.get('monthlyRent')?.valueChanges.subscribe(val => {
+      const monthly = Number(val || 0);
+      this.unitForm.patchValue({
+        yearlyRent: monthly * 12
+      }, { emitEvent: false });
+    });
+
+    // Reset irrelevant fields when availability class changes
+    this.unitForm.get('availabilityType')?.valueChanges.subscribe(val => {
+      if (val === 'LEASE') {
+        this.unitForm.patchValue({
+          salePrice: 0,
+          bookingAmount: 0
+        });
+      } else if (val === 'SALE') {
+        this.unitForm.patchValue({
+          monthlyRent: 0,
+          yearlyRent: 0
+        });
+      }
+      this.cdr.detectChanges();
+    });
+
     this.cdr.detectChanges();
   }
 
@@ -110,11 +135,21 @@ export class AdminShopUnitsComponent implements OnInit {
   openAddForm() {
     this.isEditMode = false;
     this.errorMessage = '';
+    const defaultProjectId = this.projects.length > 0 ? this.projects[0].id : '';
+    
+    // Find buildings belonging to default project
+    const defaultProjectBuildings = this.buildings.filter(b => b.projectId === defaultProjectId);
+    const defaultBuildingId = defaultProjectBuildings.length > 0 ? defaultProjectBuildings[0].id : '';
+    
+    // Find floors belonging to default building
+    const defaultBuildingFloors = this.floors.filter(f => f.buildingId === defaultBuildingId);
+    const defaultFloorId = defaultBuildingFloors.length > 0 ? defaultBuildingFloors[0].id : '';
+
     this.unitForm.reset({
-      projectId: this.projects.length > 0 ? this.projects[0].id : '',
-      buildingId: this.buildings.length > 0 ? this.buildings[0].id : '',
-      floorId: this.floors.length > 0 ? this.floors[0].id : '',
-      unitType: 'OFFICE',
+      projectId: defaultProjectId,
+      buildingId: defaultBuildingId,
+      floorId: defaultFloorId,
+      UnitType: 'OFFICE',
       availabilityType: 'LEASE',
       status: 'AVAILABLE',
       monthlyRent: 0,
@@ -136,7 +171,7 @@ export class AdminShopUnitsComponent implements OnInit {
       buildingId: u.buildingId,
       floorId: u.floorId,
       unitNumber: u.unitNumber,
-      unitType: u.unitType,
+      UnitType: u.unitType,
       areaSqft: u.areaSqft,
       availabilityType: u.availabilityType,
       status: u.status,
@@ -157,8 +192,10 @@ export class AdminShopUnitsComponent implements OnInit {
 
   onSubmit() {
     if (this.unitForm.valid) {
+      const { UnitType, ...formVals } = this.unitForm.value;
       const payload = {
-        ...this.unitForm.value,
+        ...formVals,
+        unitType: UnitType,
         projectId: Number(this.unitForm.value.projectId),
         buildingId: Number(this.unitForm.value.buildingId),
         floorId: Number(this.unitForm.value.floorId),
@@ -212,13 +249,42 @@ export class AdminShopUnitsComponent implements OnInit {
     }
   }
 
-  getUnitsByBuilding(buildingId: number): ShopUnit[] {
-    return this.units.filter(u => u.buildingId === buildingId);
+  getUnitsByFloor(floorId: number): ShopUnit[] {
+    return this.units.filter(u => u.floorId === floorId);
   }
 
   getUnassignedUnits(): ShopUnit[] {
-    const buildingIds = this.buildings.map(b => b.id);
-    return this.units.filter(u => !buildingIds.includes(u.buildingId));
+    const floorIds = this.floors.map(f => f.id);
+    return this.units.filter(u => !floorIds.includes(u.floorId));
+  }
+
+  getProjectBuildingFloorName(floor: Floor): string {
+    const building = this.buildings.find(b => b.id === floor.buildingId);
+    const buildingName = building ? building.name : `Building #${floor.buildingId}`;
+    const projectId = building ? building.projectId : 0;
+    const project = this.projects.find(p => p.id === projectId);
+    const projectName = project ? project.name : `Project #${projectId}`;
+    return `${projectName} - ${buildingName} - ${floor.floorName}`;
+  }
+
+  getFilteredBuildings(): Building[] {
+    const selectedProjectId = this.unitForm.get('projectId')?.value;
+    if (!selectedProjectId) {
+      return [];
+    }
+    const pId = Number(selectedProjectId);
+    return this.buildings.filter(b => b.projectId === pId);
+  }
+
+  onProjectChange() {
+    const filteredBuildings = this.getFilteredBuildings();
+    if (filteredBuildings.length > 0) {
+      this.unitForm.patchValue({ buildingId: filteredBuildings[0].id });
+      this.onBuildingChange();
+    } else {
+      this.unitForm.patchValue({ buildingId: '', floorId: '' });
+    }
+    this.cdr.detectChanges();
   }
 
   getFilteredFloors(): Floor[] {

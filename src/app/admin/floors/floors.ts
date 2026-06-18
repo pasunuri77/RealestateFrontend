@@ -1,32 +1,43 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FloorService } from '../../core/services/floor.service';
 import { BuildingService } from '../../core/services/building.service';
+import { ProjectService } from '../../core/services/project.service';
 import { Floor } from '../../models/floor.model';
 import { Building } from '../../models/building.model';
+import { Project } from '../../models/project.model';
 
 @Component({
   selector: 'app-admin-floors',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './floors.html',
   styleUrl: './floors.scss'
 })
 export class AdminFloorsComponent implements OnInit {
   private floorService = inject(FloorService);
   private buildingService = inject(BuildingService);
+  private projectService = inject(ProjectService);
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
 
   floors: Floor[] = [];
   buildings: Building[] = [];
+  projects: Project[] = [];
   isLoading = true;
   showForm = false;
   isEditMode = false;
   selectedFloorId: number | null = null;
 
+  getSelectedBuildingFloors(): Floor[] {
+    const bId = this.floorForm.get('buildingId')?.value;
+    if (!bId) return [];
+    return this.getFloorsByBuilding(Number(bId));
+  }
+
   floorForm: FormGroup = this.fb.group({
+    projectId: ['', Validators.required],
     buildingId: ['', Validators.required],
     floorName: ['', Validators.required],
     floorNumber: ['', [Validators.required]],
@@ -37,6 +48,7 @@ export class AdminFloorsComponent implements OnInit {
   ngOnInit() {
     this.loadFloors();
     this.loadBuildings();
+    this.loadProjects();
   }
 
   loadFloors() {
@@ -58,9 +70,6 @@ export class AdminFloorsComponent implements OnInit {
     this.buildingService.getBuildings().subscribe({
       next: (data) => {
         this.buildings = data;
-        if (data.length > 0) {
-          this.floorForm.patchValue({ buildingId: data[0].id });
-        }
         this.cdr.detectChanges();
       },
       error: () => {
@@ -69,10 +78,43 @@ export class AdminFloorsComponent implements OnInit {
     });
   }
 
+  loadProjects() {
+    this.projectService.getProjects().subscribe({
+      next: (data) => {
+        this.projects = data;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  getFilteredBuildings(): Building[] {
+    const selectedProjectId = this.floorForm.get('projectId')?.value;
+    if (!selectedProjectId) return [];
+    return this.buildings.filter(b => b.projectId === Number(selectedProjectId));
+  }
+
+  onProjectChange() {
+    const filtered = this.getFilteredBuildings();
+    if (filtered.length > 0) {
+      this.floorForm.patchValue({ buildingId: filtered[0].id });
+    } else {
+      this.floorForm.patchValue({ buildingId: '' });
+    }
+    this.cdr.detectChanges();
+  }
+
   openAddForm() {
     this.isEditMode = false;
+    const defaultProjectId = this.projects.length > 0 ? this.projects[0].id : '';
+    const filteredBuildings = this.buildings.filter(b => b.projectId === defaultProjectId);
+    const defaultBuildingId = filteredBuildings.length > 0 ? filteredBuildings[0].id : '';
+
     this.floorForm.reset({
-      buildingId: this.buildings.length > 0 ? this.buildings[0].id : '',
+      projectId: defaultProjectId,
+      buildingId: defaultBuildingId,
       floorNumber: 0,
       units: ''
     });
@@ -83,7 +125,12 @@ export class AdminFloorsComponent implements OnInit {
   openEditForm(f: Floor) {
     this.isEditMode = true;
     this.selectedFloorId = f.id || null;
+
+    const building = this.buildings.find(b => b.id === f.buildingId);
+    const projId = building ? building.projectId : '';
+
     this.floorForm.patchValue({
+      projectId: projId,
       buildingId: f.buildingId,
       floorName: f.floorName,
       floorNumber: f.floorNumber,
@@ -101,11 +148,12 @@ export class AdminFloorsComponent implements OnInit {
 
   onSubmit() {
     if (this.floorForm.valid) {
+      const { projectId, ...formVals } = this.floorForm.value;
       const payload = {
-        ...this.floorForm.value,
-        buildingId: Number(this.floorForm.value.buildingId),
-        floorNumber: Number(this.floorForm.value.floorNumber),
-        units: Number(this.floorForm.value.units)
+        ...formVals,
+        buildingId: Number(formVals.buildingId),
+        floorNumber: Number(formVals.floorNumber),
+        units: Number(formVals.units)
       };
 
       if (this.isEditMode && this.selectedFloorId !== null) {
@@ -155,5 +203,10 @@ export class AdminFloorsComponent implements OnInit {
   getUnassignedFloors(): Floor[] {
     const buildingIds = this.buildings.map(b => b.id);
     return this.floors.filter(f => !buildingIds.includes(f.buildingId));
+  }
+
+  getProjectName(projectId: number): string {
+    const project = this.projects.find(p => p.id === projectId);
+    return project ? project.name : `Project #${projectId}`;
   }
 }

@@ -58,36 +58,88 @@
   @if (isLoading) {
     <div class="loading">Loading structural blocks...</div>
   } @else {
-    <div class="table-container">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Block Name</th>
-            <th>Project ID</th>
-            <th>Total Floors</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (b of buildings; track b.id) {
+    @if (buildings.length === 0) {
+      <div class="table-container">
+        <table class="admin-table">
+          <tbody>
             <tr>
-              <td><strong>{{ b.name }}</strong></td>
-              <td>Project #{{ b.projectId }}</td>
-              <td>{{ b.totalFloors }} Floors</td>
-              <td>{{ b.description }}</td>
-              <td>
-                <button class="btn-edit" (click)="openEditForm(b)">Edit</button>
-                <button class="btn-delete" (click)="onDelete(b.id!)">Delete</button>
-              </td>
+              <td class="empty-state">No buildings found. Click Add Building to create one.</td>
             </tr>
-          } @empty {
-            <tr>
-              <td colspan="5" class="empty-state">No buildings found. Click Add Building to create one.</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      @for (p of projects; track p.id) {
+        @if (getBuildingsByProject(p.id!).length > 0) {
+          <div class="project-buildings-section" style="margin-bottom: 2.5rem;">
+            <h3 class="project-section-title" style="display: flex; align-items: center; gap: 0.5rem; color: var(--color-primary); font-size: 1.25rem; font-weight: 700; border-bottom: 2px solid var(--color-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+              <span class="material-icons">business</span>
+              {{ p.name }}
+            </h3>
+            <div class="table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Block Name</th>
+                    <th>Total Floors</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (b of getBuildingsByProject(p.id!); track b.id) {
+                    <tr>
+                      <td><strong>{{ b.name }}</strong></td>
+                      <td>{{ b.totalFloors }} Floors</td>
+                      <td>{{ b.description }}</td>
+                      <td>
+                        <button class="btn-edit" (click)="openEditForm(b)">Edit</button>
+                        <button class="btn-delete" (click)="onDelete(b.id!)">Delete</button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        }
+      }
+
+      @if (getUnassignedBuildings().length > 0) {
+        <div class="project-buildings-section" style="margin-bottom: 2.5rem;">
+          <h3 class="project-section-title" style="display: flex; align-items: center; gap: 0.5rem; color: var(--color-text-muted); font-size: 1.25rem; font-weight: 700; border-bottom: 2px solid var(--color-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+            <span class="material-icons">help_outline</span>
+            Unassigned Buildings
+          </h3>
+          <div class="table-container">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Block Name</th>
+                  <th>Project ID</th>
+                  <th>Total Floors</th>
+                  <th>Description</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (b of getUnassignedBuildings(); track b.id) {
+                  <tr>
+                    <td><strong>{{ b.name }}</strong></td>
+                    <td>Project #{{ b.projectId }}</td>
+                    <td>{{ b.totalFloors }} Floors</td>
+                    <td>{{ b.description }}</td>
+                    <td>
+                      <button class="btn-edit" (click)="openEditForm(b)">Edit</button>
+                      <button class="btn-delete" (click)="onDelete(b.id!)">Delete</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    }
   }
 </div>

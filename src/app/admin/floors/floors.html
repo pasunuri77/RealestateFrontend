@@ -14,13 +14,38 @@
         <h2>{{ isEditMode ? 'Edit Floor Level' : 'New Floor Level' }}</h2>
         <form [formGroup]="floorForm" (ngSubmit)="onSubmit()">
           <div class="form-group">
-            <label>Parent Building Block *</label>
-            <select formControlName="buildingId">
-              @for (b of buildings; track b.id) {
-                <option [value]="b.id">{{ b.name }}</option>
+            <label>Project *</label>
+            <select formControlName="projectId" (change)="onProjectChange()">
+              @for (p of projects; track p.id) {
+                <option [value]="p.id">{{ p.name }}</option>
               }
             </select>
           </div>
+
+          @let filteredBuildings = getFilteredBuildings();
+          @if (filteredBuildings.length > 0) {
+            <div class="form-group">
+              <label>Parent Building Block *</label>
+              <select formControlName="buildingId">
+                @for (b of filteredBuildings; track b.id) {
+                  <option [value]="b.id">{{ b.name }}</option>
+                }
+              </select>
+
+              <!-- Show selected building's floors in popup only if they exist -->
+              @let selectedFloors = getSelectedBuildingFloors();
+              @if (selectedFloors.length > 0) {
+                <div class="building-floors-preview" style="margin-top: 0.75rem; padding: 0.75rem; background: var(--color-bg-light); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+                  <label style="font-weight: 700; font-size: 0.8rem; color: var(--color-text-muted); display: block; margin-bottom: 0.25rem;">Existing Floors in Selected Building:</label>
+                  <ul style="padding-left: 1.25rem; font-size: 0.85rem; color: var(--color-text-dark); margin: 0; max-height: 120px; overflow-y: auto;">
+                    @for (f of selectedFloors; track f.id) {
+                      <li>{{ f.floorName }} (Level {{ f.floorNumber }}) - {{ f.units }} units</li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
+          }
 
           <div class="form-group">
             <label>Floor Name *</label>
@@ -73,7 +98,7 @@
           <div class="building-floors-section" style="margin-bottom: 2.5rem;">
             <h3 class="building-section-title" style="display: flex; align-items: center; gap: 0.5rem; color: var(--color-primary); font-size: 1.25rem; font-weight: 700; border-bottom: 2px solid var(--color-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
               <span class="material-icons">corporate_fare</span>
-              {{ b.name }}
+              {{ getProjectName(b.projectId) }} - {{ b.name }}
             </h3>
             <div class="table-container">
               <table class="admin-table">
