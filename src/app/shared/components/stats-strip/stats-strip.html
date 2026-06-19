@@ -1,0 +1,26 @@
+<div class="stats-section" *ngIf="hasStats">
+  <div class="stats-container">
+    <div class="stats-grid">
+      <div class="stat-card completed" *ngIf="completedProjects > 0">
+        <span class="stat-count">{{ completedProjects }}</span>
+        <span class="stat-label">Completed Projects</span>
+      </div>
+      <div class="stat-card ongoing" *ngIf="ongoingProjects > 0">
+        <span class="stat-count">{{ ongoingProjects }}</span>
+        <span class="stat-label">Ongoing Projects</span>
+      </div>
+      <div class="stat-card upcoming" *ngIf="upcomingProjects > 0">
+        <span class="stat-count">{{ upcomingProjects }}</span>
+        <span class="stat-label">Upcoming Projects</span>
+      </div>
+      <div class="stat-card buildings" *ngIf="totalBuildings > 0">
+        <span class="stat-count">{{ totalBuildings }}</span>
+        <span class="stat-label">Total Buildings</span>
+      </div>
+      <div class="stat-card units" *ngIf="availableUnits > 0">
+        <span class="stat-count">{{ availableUnits }}</span>
+        <span class="stat-label">Available Units</span>
+      </div>
+    </div>
+  </div>
+</div>

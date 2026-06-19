@@ -1,0 +1,65 @@
+<section class="hero-section">
+  <div class="hero-bg-overlay"></div>
+  <div class="hero-container">
+    <div class="hero-content">
+      <span class="hero-tag">RealEstate Constructor Marketplace</span>
+      <h1 class="hero-title">Find Commercial Spaces, Projects & Units</h1>
+      <p class="hero-subtitle">
+        Explore premier workspaces, retail locations, and developments for construction, leasing, sale, and investment.
+      </p>
+
+      <!-- Category Tabs Section -->
+      <div class="category-tabs">
+        <button 
+          *ngFor="let cat of categories" 
+          class="tab-btn" 
+          [class.active]="activeTab === cat.type" 
+          (click)="selectCategory(cat)"
+        >
+          <span class="material-icons tab-icon">{{ cat.icon }}</span>
+          <span class="tab-label">{{ cat.label }}</span>
+        </button>
+      </div>
+
+      <!-- Search Input Section -->
+      <div class="hero-search-wrapper">
+        <span class="material-icons search-icon">location_on</span>
+        <input 
+          type="text" 
+          class="hero-search-input"
+          placeholder="Search City, Area, Landmark or Address..." 
+          (input)="onSearchInput($event)"
+          (keydown)="onSearchKeydown($event)"
+          [value]="searchQuery"
+          (blur)="onSearchBlur()"
+        />
+        <button class="search-btn" (click)="triggerSearch()">
+          <span class="material-icons">search</span>
+          <span>Search</span>
+        </button>
+
+        <!-- Autocomplete Suggestions Dropdown -->
+        <ul class="search-suggestions-dropdown" *ngIf="showSuggestions && (suggestions.length > 0 || isLoadingSuggestions || noSuggestionsFound)">
+          <li class="suggestion-loading" *ngIf="isLoadingSuggestions">
+            <span class="material-icons rotating-icon">sync</span> Loading suggestions...
+          </li>
+          <li class="suggestion-empty" *ngIf="noSuggestionsFound && !isLoadingSuggestions">
+            No results found
+          </li>
+          <li 
+            *ngFor="let item of suggestions; let i = index" 
+            [class.active]="i === activeSuggestionIndex"
+            (mousedown)="selectSuggestion(item)"
+            (mouseenter)="activeSuggestionIndex = i"
+          >
+            <span class="material-icons place-icon">place</span>
+            <div class="suggestion-info">
+              <span class="place-name">{{ item.name }}</span>
+              <span class="place-details">{{ formatDetails(item) }}</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>

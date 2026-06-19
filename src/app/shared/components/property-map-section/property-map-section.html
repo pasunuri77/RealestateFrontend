@@ -1,0 +1,104 @@
+<div class="map-search-layout">
+  <!-- Left Side: Interactive Map (45%) -->
+  <div class="map-wrapper">
+    <div id="finder-map" style="width: 100%; height: 100%; z-index: 1;"></div>
+  </div>
+
+  <!-- Right Side: Filters and Results (55%) -->
+  <div class="results-wrapper">
+    <!-- Filters Header -->
+    <div class="filters-container">
+      <div class="filter-group">
+        <label>Project Type</label>
+        <select [(ngModel)]="filterProjectType" (change)="applyFilters()">
+          <option value="ALL">All Types</option>
+          <option value="RESIDENTIAL">Residential</option>
+          <option value="COMMERCIAL">Commercial</option>
+          <option value="MIXED">Mixed Use</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Unit Type</label>
+        <select [(ngModel)]="filterUnitType" (change)="applyFilters()" [disabled]="filterProjectType === 'RESIDENTIAL'">
+          <option value="ALL">All Units</option>
+          <option value="SHOP">Shops</option>
+          <option value="OFFICE">Offices</option>
+          <option value="FLAT">Flats</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Price Range</label>
+        <select [(ngModel)]="filterPriceRange" (change)="applyFilters()">
+          <option value="ALL">Any Price</option>
+          <option value="UNDER_10L">Under ₹10L</option>
+          <option value="10L_50L">₹10L - ₹50L</option>
+          <option value="50L_1C">₹50L - ₹1C</option>
+          <option value="ABOVE_1C">Above ₹1C</option>
+        </select>
+      </div>
+
+      <div class="filter-group reset-group">
+        <button type="button" class="btn-reset-filters" (click)="resetFilters()">
+          <span class="material-icons">restart_alt</span> Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- Results Listing -->
+    <div class="results-list">
+      <div *ngIf="isSearching" class="loading-state">
+        <span class="material-icons rotating-icon">sync</span>
+        <p>Loading projects nearby...</p>
+      </div>
+
+      <ng-container *ngIf="!isSearching">
+        <div 
+          *ngFor="let project of filteredProjects" 
+          [id]="'finder-card-' + project.id" 
+          class="nearby-project-card"
+          [class.highlighted]="highlightedProjectId === project.id" 
+          (click)="onCardClick(project)"
+        >
+          <img [src]="project.projectImage || '/metro-plaza.png'" alt="Project Cover" class="card-img" />
+
+          <div class="nearby-card-info">
+            <div class="card-header-row">
+              <span class="type-badge">{{ project.projectType }}</span>
+              <span class="distance-badge" *ngIf="project.distance !== undefined">
+                <span class="material-icons">navigation</span> {{ project.distance }} km
+              </span>
+            </div>
+            <h3>{{ project.name }}</h3>
+            <p class="address-text"><span class="material-icons">place</span> {{ project.location }}</p>
+            <p class="project-desc-text">{{ project.description }}</p>
+
+            <div class="card-footer-row">
+              <div class="project-dates">
+                <span>
+                  <span class="material-icons">today</span>
+                  Start: {{ project.startDate | date:'mediumDate' }}
+                </span>
+                <span>
+                  <span class="material-icons">event_available</span>
+                  End: {{ (project.completedDate || project.expectedCompletionDate) | date:'mediumDate' }}
+                </span>
+              </div>
+
+              <button class="btn-card-details" [routerLink]="['/projects', project.id]">
+                Details
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="filteredProjects.length === 0" class="no-results-container">
+          <span class="material-icons empty-icon">map</span>
+          <h4>No Projects Found Nearby</h4>
+          <p>Try adjusting filters or moving the map to another area.</p>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

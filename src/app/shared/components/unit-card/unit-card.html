@@ -1,0 +1,30 @@
+<div class="unit-card">
+  <div class="image-wrapper">
+    <img src="/tech-park.png" [alt]="unit.unitNumber" class="unit-image" />
+    <span class="availability-badge" 
+          *ngIf="unit.availabilityType" 
+          [class]="unit.availabilityType.toLowerCase()">
+      For {{ unit.availabilityType }}
+    </span>
+  </div>
+  <div class="card-content">
+    <div class="unit-meta">
+      <span class="area-tag" *ngIf="unit.areaSqft">{{ unit.areaSqft }} Sq.Ft</span>
+      <span class="type-tag" *ngIf="unit.unitType">{{ unit.unitType }}</span>
+    </div>
+    <h3 class="unit-title">Unit {{ unit.unitNumber }}</h3>
+
+    <div class="pricing-box" *ngIf="unit.monthlyRent > 0 || unit.salePrice > 0">
+      <div class="price-row" *ngIf="(unit.availabilityType === 'LEASE' || unit.availabilityType === 'BOTH') && unit.monthlyRent > 0">
+        <span>Monthly Rent:</span>
+        <strong>₹{{ unit.monthlyRent | number }}</strong>
+      </div>
+      <div class="price-row" *ngIf="(unit.availabilityType === 'SALE' || unit.availabilityType === 'BOTH') && unit.salePrice > 0">
+        <span>Sale Price:</span>
+        <strong class="gold-text">₹{{ unit.salePrice | number }}</strong>
+      </div>
+    </div>
+    
+    <button class="btn-card-action" [routerLink]="['/units', unit.shopOrUnitId]">Explore Details</button>
+  </div>
+</div>

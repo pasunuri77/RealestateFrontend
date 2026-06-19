@@ -1,0 +1,28 @@
+<div class="project-card">
+  <div class="image-wrapper">
+    <img [src]="project.projectImage || '/metro-plaza.png'" [alt]="project.name" class="project-image" />
+    <span class="status-badge" [class]="(project.status || '').toLowerCase()">{{ project.status }}</span>
+    <span class="type-badge">{{ project.projectType }}</span>
+  </div>
+  <div class="card-content">
+    <div class="location-wrapper">
+      <span class="material-icons">place</span>
+      <span>{{ project.location }}</span>
+    </div>
+    <h3 class="project-name">{{ project.name }}</h3>
+    <p class="project-desc">{{ project.description }}</p>
+
+    <div class="project-stats" *ngIf="buildingCount > 0 || unitCount > 0">
+      <span class="stat-item" *ngIf="buildingCount > 0">
+        <span class="material-icons">domain</span>
+        <strong>{{ buildingCount }}</strong> Buildings
+      </span>
+      <span class="stat-item" *ngIf="unitCount > 0">
+        <span class="material-icons">storefront</span>
+        <strong>{{ unitCount }}</strong> Units
+      </span>
+    </div>
+
+    <button class="btn-card-action" [routerLink]="['/projects', project.id]">View Details</button>
+  </div>
+</div>

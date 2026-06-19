@@ -1,246 +1,63 @@
-<!-- Hero Section -->
-<section class="hero-section">
-  <div class="hero-bg-overlay"></div>
-  <div class="hero-container">
-    <div class="hero-content">
-      <span class="hero-tag">Premium Construction & Commercial Leasing</span>
-      <h1 class="hero-title">Build. Lease.<br>Own. Grow.</h1>
-      <p class="hero-subtitle">
-        Explore completed, ongoing, and upcoming real estate projects with premium commercial spaces and units.
-      </p>
-      <div class="hero-actions">
-        <button class="btn btn-primary-gold" (click)="scrollToSection('featured-projects')">View Projects</button>
-        <button class="btn btn-secondary-outline" (click)="scrollToSection('available-units')">Explore Units</button>
-      </div>
-
-      <!-- Compact Search Bar in Hero -->
-      <div class="hero-search-wrapper" style="position: relative;">
-        <span class="material-icons search-icon">location_on</span>
-        <input 
-          #searchBox 
-          type="text" 
-          class="hero-search-input"
-          placeholder="Search City, Area, Landmark or Address to locate on map..." 
-          (input)="onSearchInput($event)"
-          (keydown)="onSearchKeydown($event)"
-          [value]="searchQuery"
-          (blur)="onSearchBlur()"
-        />
-
-        <!-- Autocomplete Suggestions Dropdown -->
-        @if (showSuggestions && (suggestions.length > 0 || isLoadingSuggestions || noSuggestionsFound)) {
-          <ul class="search-suggestions-dropdown">
-            @if (isLoadingSuggestions) {
-              <li class="suggestion-loading">
-                <span class="material-icons rotating-icon">sync</span> Loading suggestions...
-              </li>
-            }
-            @if (noSuggestionsFound && !isLoadingSuggestions) {
-              <li class="suggestion-empty">No results found</li>
-            }
-            @for (item of suggestions; track item; let i = $index) {
-              <li 
-                [class.active]="i === activeSuggestionIndex"
-                (mousedown)="selectSuggestion(item)"
-                (mouseenter)="activeSuggestionIndex = i"
-              >
-                <span class="material-icons place-icon">place</span>
-                <div class="suggestion-info">
-                  <span class="place-name">{{ item.name }}</span>
-                  <span class="place-details">{{ formatDetails(item) }}</span>
-                </div>
-              </li>
-            }
-          </ul>
-        }
-      </div>
-    </div>
+<!-- LoopNet Style Hero Search Section -->
+<app-hero-search 
+  [searchQuery]="searchQuery" 
+  (searchSelected)="onSearchSelected($event)"
+  (categorySelected)="onCategorySelected($event)"
+></app-hero-search>
 
 
-  </div>
-</section>
 
-<!-- Map Search Section -->
+<!-- Interactive Map + Results Section -->
 <section id="map-search-section" class="map-search-section">
   <div class="section-container-fluid">
     <div class="section-header-compact">
-      <span class="section-tag">Interactive Finder</span>
-      <h2 class="section-title">Search Projects & Properties on Map</h2>
+      <span class="section-tag">Interactive Map Finder</span>
+      <h2 class="section-title">Browse Properties Nearby</h2>
+      <p class="section-subtitle">Use map search and advanced filters to discover premier buildings and active constructions.</p>
     </div>
 
-    <div class="map-search-layout">
-      <!-- Left Side: Interactive Map (45%) -->
-      <div class="map-wrapper">
-        <div id="map" style="width: 100%; height: 100%; z-index: 1;"></div>
-      </div>
-
-      <!-- Right Side: Filters and Results (55%) -->
-      <div class="results-wrapper">
-        <!-- Filters Header (Sticky) -->
-        <div class="filters-container">
-          <div class="filter-group">
-            <label>Project Type</label>
-            <select [(ngModel)]="filterProjectType" (change)="applyFilters()">
-              <option value="ALL">All Types</option>
-              <option value="RESIDENTIAL">Residential</option>
-              <option value="COMMERCIAL">Commercial</option>
-              <option value="MIXED">Mixed Use</option>
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label>Unit Type</label>
-            <select [(ngModel)]="filterUnitType" (change)="applyFilters()" [disabled]="filterProjectType === 'RESIDENTIAL'">
-              <option value="ALL">All Units</option>
-              <option value="SHOP">Shops</option>
-              <option value="OFFICE">Offices</option>
-              <option value="FLAT">Flats</option>
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label>Price Range</label>
-            <select [(ngModel)]="filterPriceRange" (change)="applyFilters()">
-              <option value="ALL">Any Price</option>
-              <option value="UNDER_10L">Under ₹10L</option>
-              <option value="10L_50L">₹10L - ₹50L</option>
-              <option value="50L_1C">₹50L - ₹1C</option>
-              <option value="ABOVE_1C">Above ₹1C</option>
-            </select>
-          </div>
-
-          <div class="filter-group reset-group">
-            <button type="button" class="btn-reset-filters" (click)="resetFilters()">
-              <span class="material-icons">restart_alt</span> Reset
-            </button>
-          </div>
-        </div>
-
-        <!-- Results Listing -->
-        <div class="results-list">
-          @if (isSearchingNearby) {
-          <!-- Skeleton Loader -->
-          @for (item of [1, 2, 3]; track item) {
-          <div class="skeleton-card">
-            <div class="skeleton-img"></div>
-            <div class="skeleton-info">
-              <div class="skeleton-line title"></div>
-              <div class="skeleton-line text"></div>
-              <div class="skeleton-line text short"></div>
-            </div>
-          </div>
-          }
-          } @else {
-          @for (project of filteredProjects; track project.id) {
-          <div [id]="'project-card-' + project.id" class="nearby-project-card"
-            [class.highlighted]="highlightedProjectId === project.id" (click)="onCardClick(project)">
-            <img [src]="project.projectImage || '/metro-plaza.png'" alt="Project Cover" class="card-img" />
-
-            <div class="nearby-card-info">
-              <div class="card-header-row">
-                <span class="type-badge">{{ project.projectType }}</span>
-                @if (project.distance !== undefined) {
-                <span class="distance-badge"><span class="material-icons">navigation</span> {{ project.distance }}
-                  km</span>
-                }
-              </div>
-              <h3>{{ project.name }}</h3>
-              <p class="address-text"><span class="material-icons">place</span> {{ project.location }}</p>
-
-              <!-- Description -->
-              <p class="project-desc-text">
-                {{ project.description }}
-              </p>
-
-              <!-- Card Footer Row with Dates & Details Button -->
-              <div class="card-footer-row"
-                style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 0.5rem; border-top: 1px solid var(--color-border); flex-wrap: wrap; gap: 0.5rem;">
-                <!-- Dates -->
-                <div class="project-dates"
-                  style="display: flex; gap: 0.75rem; font-size: 0.75rem; color: var(--color-text-light); flex-wrap: wrap;">
-                  <span style="display: flex; align-items: center; gap: 0.2rem;">
-                    <span class="material-icons" style="font-size: 0.85rem; color: var(--color-primary);">today</span>
-                    Start: {{ project.startDate | date:'mediumDate' }}
-                  </span>
-                  <span style="display: flex; align-items: center; gap: 0.2rem;">
-                    <span class="material-icons"
-                      style="font-size: 0.85rem; color: var(--color-primary);">event_available</span>
-                    End: {{ (project.completedDate || project.expectedCompletionDate) | date:'mediumDate' }}
-                  </span>
-                </div>
-
-                <!-- Details Action -->
-                <button class="btn-card-details" [routerLink]="['/projects', project.id]">
-                  Details
-                </button>
-              </div>
-            </div>
-          </div>
-          } @empty {
-          <!-- No Results Empty State -->
-          <div class="no-results-container">
-            <span class="material-icons empty-icon">map</span>
-            <h4>No Projects Found Nearby</h4>
-            <p>Try expanding your search radius, adjusting filters, or moving the map to another area.</p>
-          </div>
-          }
-          }
-        </div>
-      </div>
-    </div>
+    <app-property-map-section
+      [projects]="nearbyProjects"
+      [isSearching]="isSearchingNearby"
+      [filterProjectType]="filterProjectType"
+      [filterUnitType]="filterUnitType"
+      [hasSearchedLocation]="hasSearchedLocation"
+      (filterChanged)="onMapFiltersChanged($event)"
+    ></app-property-map-section>
   </div>
 </section>
 
-<!-- Featured Projects Section -->
+<!-- Featured / Trending Projects Section -->
 <section id="featured-projects" class="projects-section">
   <div class="section-container">
     <div class="section-header">
       <span class="section-tag">Portfolio Highlights</span>
-      <h2 class="section-title">Featured Real Estate Projects</h2>
-      <p class="section-subtitle">Stunning developments engineered to host enterprise growth and high-end modern living.
-      </p>
+      <h2 class="section-title">Trending Real Estate Projects</h2>
+      <p class="section-subtitle">A curated showcase of commercial developments, premier spaces, and construction milestones.</p>
     </div>
 
-    @if (isLoadingProjects) {
-    <div class="loading">Loading projects from backend API...</div>
-    } @else {
-    <div class="cards-grid projects-grid">
-      @for (project of projects; track project.id) {
-      <div class="project-card">
-        <div class="image-wrapper">
-          <img src="/metro-plaza.png" [alt]="project.name" class="project-image" />
-          <span class="status-badge-inline" [class]="project.status.toLowerCase()">{{ project.status }}</span>
-          <span class="type-badge">{{ project.projectType }}</span>
-        </div>
-        <div class="card-content">
-          <div class="location-wrapper" style="display: flex; align-items: center; gap: 0.25rem;">
-            <span class="material-icons" style="font-size: 1.15rem;">place</span>
-            <span>{{ project.location }}</span>
-          </div>
-          <h3 class="project-name">{{ project.name }}</h3>
-          <p class="project-desc">{{ project.description }}</p>
+    <div *ngIf="isLoadingProjects" class="loading-state">
+      <span class="material-icons rotating-icon">sync</span>
+      <p>Fetching projects from API...</p>
+    </div>
 
-          <!-- Project Stats -->
-          <div class="project-stats"
-            style="display: flex; gap: 1rem; margin-bottom: 1rem; font-size: 0.85rem; color: var(--color-text-muted);">
-            <span style="display: flex; align-items: center; gap: 0.25rem;">
-              <span class="material-icons" style="font-size: 1.15rem; color: var(--color-primary);">domain</span>
-              <strong>{{ getBuildingCountForProject(project.id!) }}</strong> Buildings
-            </span>
-            <span style="display: flex; align-items: center; gap: 0.25rem;">
-              <span class="material-icons" style="font-size: 1.15rem; color: var(--color-primary);">storefront</span>
-              <strong>{{ getUnitCountForProject(project.id!) }}</strong> Units
-            </span>
-          </div>
-
-          <button class="btn-card-action" [routerLink]="['/projects', project.id]">View Details</button>
-        </div>
+    <ng-container *ngIf="!isLoadingProjects">
+      <div class="cards-grid projects-grid" *ngIf="projects.length > 0">
+        <app-project-card 
+          *ngFor="let proj of projects" 
+          [project]="proj"
+          [buildingCount]="getBuildingCountForProject(proj.id!)"
+          [unitCount]="getUnitCountForProject(proj.id!)"
+        ></app-project-card>
       </div>
-      } @empty {
-      <div class="empty-state">No projects found. Add them in the Admin Panel.</div>
-      }
-    </div>
-    }
+
+      <app-empty-state 
+        *ngIf="projects.length === 0"
+        icon="domain_disabled"
+        title="No Projects Available"
+        message="There are currently no featured projects listed on the marketplace."
+      ></app-empty-state>
+    </ng-container>
   </div>
 </section>
 
@@ -250,87 +67,67 @@
     <div class="section-header">
       <span class="section-tag">Immediate Openings</span>
       <h2 class="section-title">Units Available for Lease & Sale</h2>
-      <p class="section-subtitle">Find premium offices, retail spots, and shops ready for your business operations.</p>
+      <p class="section-subtitle">Browse premium offices, retail outlets, and shop units ready for business setup.</p>
     </div>
 
-    @if (isLoadingUnits) {
-    <div class="loading">Loading units from backend API...</div>
-    } @else {
-    <div class="cards-grid units-grid">
-      @for (unit of units; track unit.shopOrUnitId) {
-      <div class="unit-card">
-        <div class="image-wrapper">
-          <img src="/tech-park.png" [alt]="unit.unitNumber" class="unit-image" />
-          <span class="availability-badge" [class]="unit.availabilityType.toLowerCase()">For {{ unit.availabilityType
-            }}</span>
-        </div>
-        <div class="card-content">
-          <div class="unit-meta">
-            <span class="area-tag">{{ unit.areaSqft }} Sq.Ft</span>
-            <span class="type-tag">{{ unit.unitType }}</span>
-          </div>
-          <h3 class="unit-title">Unit {{ unit.unitNumber }}</h3>
+    <div *ngIf="isLoadingUnits" class="loading-state">
+      <span class="material-icons rotating-icon">sync</span>
+      <p>Loading unit options...</p>
+    </div>
 
-          <div class="pricing-box">
-            @if (unit.availabilityType === 'LEASE' || unit.availabilityType === 'BOTH') {
-            <div class="price-row">
-              <span>Monthly Rent:</span>
-              <strong>₹{{ unit.monthlyRent | number }}</strong>
-            </div>
-            }
-            @if (unit.availabilityType === 'SALE' || unit.availabilityType === 'BOTH') {
-            <div class="price-row">
-              <span>Sale Price:</span>
-              <strong class="gold-text">₹{{ unit.salePrice | number }}</strong>
-            </div>
-            }
-          </div>
-          <button class="btn-card-action" [routerLink]="['/units', unit.shopOrUnitId]">Explore Unit details</button>
-        </div>
+    <ng-container *ngIf="!isLoadingUnits">
+      <div class="cards-grid units-grid" *ngIf="units.length > 0">
+        <app-unit-card 
+          *ngFor="let u of units" 
+          [unit]="u"
+        ></app-unit-card>
       </div>
-      } @empty {
-      <div class="empty-state">No commercial/residential units available right now.</div>
-      }
-    </div>
-    }
+
+      <app-empty-state 
+        *ngIf="units.length === 0"
+        icon="store_mall_directory"
+        title="No Units Available"
+        message="There are currently no commercial or residential units listed for lease or sale."
+      ></app-empty-state>
+    </ng-container>
   </div>
 </section>
 
-<!-- Why Choose Us -->
+<!-- Clean, Professional Content / Benefits Section -->
 <section id="why-choose-us" class="features-section">
   <div class="section-container">
     <div class="section-header center">
       <span class="section-tag">Value Proposition</span>
-      <h2 class="section-title">Why Business Owners Partner With Us</h2>
-      <p class="section-subtitle">Setting unmatched records of engineering excellence and operational transparency.</p>
+      <h2 class="section-title">Partnering with RealEstate Constructor</h2>
+      <p class="section-subtitle">Engineered for commercial efficiency, investment transparency, and structural safety.</p>
     </div>
     <div class="features-grid">
       <div class="feature-card">
         <div class="icon-container"><span class="material-icons">architecture</span></div>
         <div class="feature-text">
-          <h3>Trusted Construction</h3>
-          <p>Over two decades of structural integrity and premium finishes.</p>
+          <h3>Expert Construction</h3>
+          <p>Uncompromising building layout design, premium materials, and timely project delivery.</p>
         </div>
       </div>
       <div class="feature-card">
-        <div class="icon-container"><span class="material-icons">place</span></div>
+        <div class="icon-container"><span class="material-icons">room</span></div>
         <div class="feature-text">
-          <h3>Prime Locations</h3>
-          <p>Developments centered in high-density corridors with heavy transit access.</p>
+          <h3>Strategic Locations</h3>
+          <p>Highly accessible commercial spaces in rapidly growing tech and retail corridors.</p>
         </div>
       </div>
       <div class="feature-card">
         <div class="icon-container"><span class="material-icons">vpn_key</span></div>
         <div class="feature-text">
-          <h3>Lease and Sale Options</h3>
-          <p>Tailored financial models with customized options for businesses.</p>
+          <h3>Flexible Acquisition</h3>
+          <p>Straightforward contracts for commercial leasing or building ownership.</p>
         </div>
       </div>
       <div class="feature-card">
-        <div class="icon-container"><span class="material-icons">visibility</span></div>
+        <div class="icon-container"><span class="material-icons">insights</span></div>
         <div class="feature-text">
-          <h3>Transparent Process</h3>
-          <p>Open progress reviews, legal checkmarks, and zero hidden charges.</p>
+          <h3>High Yield Growth</h3>
+          <p>Plazas and tech parks structured to yield optimal tenant occupancy rates.</p>
         </div>
       </div>
     </div>
