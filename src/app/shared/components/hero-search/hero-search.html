@@ -8,18 +8,7 @@
         Explore premier workspaces, retail locations, and developments for construction, leasing, sale, and investment.
       </p>
 
-      <!-- Category Tabs Section -->
-      <div class="category-tabs">
-        <button 
-          *ngFor="let cat of categories" 
-          class="tab-btn" 
-          [class.active]="activeTab === cat.type" 
-          (click)="selectCategory(cat)"
-        >
-          <span class="material-icons tab-icon">{{ cat.icon }}</span>
-          <span class="tab-label">{{ cat.label }}</span>
-        </button>
-      </div>
+
 
       <!-- Search Input Section -->
       <div class="hero-search-wrapper">
