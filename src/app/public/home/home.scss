@@ -216,3 +216,47 @@ section {
     line-height: 1.45;
   }
 }
+
+// Filter Buttons styling for Available Units
+.filter-buttons-container {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+
+  .btn-filter {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-dark);
+    padding: 0.55rem 1.25rem;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: var(--transition-smooth);
+
+    .material-icons {
+      font-size: 1.1rem;
+      color: var(--color-text-muted);
+      transition: var(--transition-smooth);
+    }
+
+    &:hover {
+      background: var(--color-bg-light);
+      border-color: var(--color-primary-light);
+    }
+
+    &.active {
+      background: var(--color-primary);
+      color: #fff;
+      border-color: var(--color-primary);
+
+      .material-icons {
+        color: #fff;
+      }
+    }
+  }
+}

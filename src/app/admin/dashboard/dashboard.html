@@ -9,28 +9,28 @@
   } @else {
     <!-- Stats Grid -->
     <div class="stats-grid">
-      <div class="stat-card">
+      <div class="stat-card clickable-stat-card" routerLink="/admin/projects">
         <span class="material-icons icon">architecture</span>
         <div>
           <h3>Total Projects</h3>
           <p class="val">{{ projectCount }}</p>
         </div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card clickable-stat-card" routerLink="/admin/projects">
         <span class="material-icons icon">storefront</span>
         <div>
           <h3>Shop Units</h3>
           <p class="val">{{ unitCount }}</p>
         </div>
       </div>
-      <div class="stat-card warning">
+      <div class="stat-card warning clickable-stat-card" routerLink="/admin/lease-requests">
         <span class="material-icons icon">description</span>
         <div>
           <h3>Lease Requests</h3>
           <p class="val">{{ pendingLeasesCount }} Pending</p>
         </div>
       </div>
-      <div class="stat-card accent">
+      <div class="stat-card accent clickable-stat-card" routerLink="/admin/purchase-requests">
         <span class="material-icons icon">monetization_on</span>
         <div>
           <h3>Purchase Offers</h3>

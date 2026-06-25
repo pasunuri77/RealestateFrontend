@@ -27,12 +27,29 @@ export class AdminPurchaseRequestsComponent implements OnInit {
     this.isLoading = true;
     this.purchaseService.getPurchaseRequests().subscribe({
       next: (data) => {
-        this.purchases = data;
+        if (!this.authService.isAdmin()) {
+          const userEmail = this.authService.currentUserSignal()?.email;
+          this.purchases = data.filter(purchase => purchase.email === userEmail);
+        } else {
+          this.purchases = data;
+        }
         this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: () => {
         this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onChangeStatus(id: number, status: string) {
+    this.purchaseService.updatePurchaseStatus(id, status).subscribe({
+      next: () => {
+        this.loadPurchases();
+        this.cdr.detectChanges();
+      },
+      error: () => {
         this.cdr.detectChanges();
       }
     });

@@ -37,14 +37,16 @@
               <td><span class="status-badge" [class]="l.status?.toLowerCase()">{{ l.status }}</span></td>
               @if (authService.isAdmin()) {
                 <td>
-                  <select #statusSelect [value]="l.status" (change)="onChangeStatus(l.id!, statusSelect.value)" class="status-select">
-                    <option value="PENDING">PENDING</option>
-                    <option value="CONTACTED">CONTACTED</option>
-                    <option value="APPROVED">APPROVED</option>
-                    <option value="REJECTED">REJECTED</option>
-                    <option value="CONVERTED">CONVERTED</option>
-                  </select>
-                  <button class="btn-delete" (click)="onDelete(l.id!)">Delete</button>
+                  <div class="actions-wrapper">
+                    <select #statusSelect [value]="l.status" (change)="onChangeStatus(l.id!, statusSelect.value)" class="status-select">
+                      <option value="PENDING">PENDING</option>
+                      <option value="CONTACTED">CONTACTED</option>
+                      <option value="APPROVED">APPROVED</option>
+                      <option value="REJECTED">REJECTED</option>
+                      <option value="CONVERTED">CONVERTED</option>
+                    </select>
+                    <button class="btn-delete" (click)="onDelete(l.id!)">Delete</button>
+                  </div>
                 </td>
               }
             </tr>

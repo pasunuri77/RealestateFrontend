@@ -27,7 +27,12 @@ export class AdminLeaseRequestsComponent implements OnInit {
     this.isLoading = true;
     this.leaseService.getLeaseRequests().subscribe({
       next: (data) => {
-        this.leases = data;
+        if (!this.authService.isAdmin()) {
+          const userEmail = this.authService.currentUserSignal()?.email;
+          this.leases = data.filter(lease => lease.email === userEmail);
+        } else {
+          this.leases = data;
+        }
         this.isLoading = false;
         this.cdr.detectChanges();
       },

@@ -37,6 +37,9 @@
         @if (isFieldInvalid('password')) {
           <span class="error-msg">Password is required</span>
         }
+        <div class="forgot-password-container">
+          <a routerLink="/forgot-password" class="forgot-link">Forgot Password?</a>
+        </div>
       </div>
 
       <button type="submit" class="btn-submit" [disabled]="loginForm.invalid || isLoading">

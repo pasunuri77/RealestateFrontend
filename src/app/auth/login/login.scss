@@ -93,3 +93,22 @@
   
   a { color: var(--color-primary); font-weight: 600; &:hover { text-decoration: underline; } }
 }
+
+.forgot-password-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+
+  .forgot-link {
+    font-size: 0.8rem;
+    color: var(--color-primary);
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition-smooth);
+
+    &:hover {
+      text-decoration: underline;
+      color: var(--color-primary-hover);
+    }
+  }
+}

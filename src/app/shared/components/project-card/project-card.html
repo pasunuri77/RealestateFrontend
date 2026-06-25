@@ -2,7 +2,7 @@
   <div class="image-wrapper">
     <img [src]="project.projectImage || '/metro-plaza.png'" [alt]="project.name" class="project-image" />
     <span class="status-badge" [class]="(project.status || '').toLowerCase()">{{ project.status }}</span>
-    <span class="type-badge">{{ project.projectType }}</span>
+    <span class="type-badge">{{ project.projectType === 'RESIDENTIAL' ? 'Residential' : (project.projectType === 'COMMERCIAL' ? 'Commercial' : (project.projectType === 'MIXED_USE' ? 'Commercial & Residential' : project.projectType)) }}</span>
   </div>
   <div class="card-content">
     <div class="location-wrapper">

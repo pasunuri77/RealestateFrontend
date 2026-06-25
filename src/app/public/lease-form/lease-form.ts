@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LeaseService } from '../../core/services/lease.service';
 import { ShopUnitService } from '../../core/services/shop-unit.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ShopUnit } from '../../models/shop-unit.model';
 
 @Component({
@@ -19,6 +20,7 @@ export class PublicLeaseFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private leaseService = inject(LeaseService);
   private shopUnitService = inject(ShopUnitService);
+  private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
 
   unitId!: number;
@@ -44,6 +46,16 @@ export class PublicLeaseFormComponent implements OnInit {
         this.loadUnitDetails(this.unitId);
       }
     });
+
+    // Auto-fill from active user session
+    const currentUser = this.authService.currentUserSignal();
+    if (currentUser) {
+      this.leaseForm.patchValue({
+        customerName: currentUser.name || '',
+        email: currentUser.email || '',
+        phone: currentUser.phone || ''
+      });
+    }
   }
 
   loadUnitDetails(id: number) {

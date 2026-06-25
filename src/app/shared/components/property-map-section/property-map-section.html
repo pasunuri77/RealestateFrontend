@@ -14,7 +14,7 @@
           <option value="ALL">All Types</option>
           <option value="RESIDENTIAL">Residential</option>
           <option value="COMMERCIAL">Commercial</option>
-          <option value="MIXED">Mixed Use</option>
+          <option value="MIXED_USE">Commercial & Residential</option>
         </select>
       </div>
 
@@ -44,6 +44,12 @@
           <span class="material-icons">restart_alt</span> Reset
         </button>
       </div>
+
+      <div class="filter-group filter-all-group">
+        <button type="button" class="btn-filter-all" (click)="openFilterAllModal()">
+          <span class="material-icons">tune</span> Filter All
+        </button>
+      </div>
     </div>
 
     <!-- Results Listing -->
@@ -65,7 +71,7 @@
 
           <div class="nearby-card-info">
             <div class="card-header-row">
-              <span class="type-badge">{{ project.projectType }}</span>
+              <span class="type-badge">{{ project.projectType === 'RESIDENTIAL' ? 'Residential' : (project.projectType === 'COMMERCIAL' ? 'Commercial' : (project.projectType === 'MIXED_USE' ? 'Commercial & Residential' : project.projectType)) }}</span>
               <span class="distance-badge" *ngIf="project.distance !== undefined">
                 <span class="material-icons">navigation</span> {{ project.distance }} km
               </span>
@@ -99,6 +105,167 @@
           <p>Try adjusting filters or moving the map to another area.</p>
         </div>
       </ng-container>
+    </div>
+  </div>
+</div>
+
+<!-- LoopNet-Style Advanced Filters Modal Overlay -->
+<div class="modal-overlay" *ngIf="isFilterAllModalOpen" (click)="closeFilterAllModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h2>Advanced Filters</h2>
+      <button class="btn-close-modal" (click)="closeFilterAllModal()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="modal-body">
+      <!-- Section 1: Location Settings -->
+      <div class="filter-section">
+        <h3><span class="material-icons">place</span> Location Filters</h3>
+        <div class="fields-grid">
+          <div class="field-item">
+            <label>Country</label>
+            <select [(ngModel)]="tempCountry" (change)="onCountryChange(tempCountry)">
+              <option value="ALL">All Countries</option>
+              <option *ngFor="let c of countries" [value]="c.name">{{ c.name }}</option>
+            </select>
+          </div>
+
+          <div class="field-item">
+            <label>State</label>
+            <select [(ngModel)]="tempState" [disabled]="tempCountry === 'ALL'">
+              <option value="ALL">All States</option>
+              <option *ngFor="let s of availableStates" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+
+          <div class="field-item full-width">
+            <label>City or Area Name</label>
+            <input 
+              type="text" 
+              placeholder="e.g. Bengaluru, Hyderabad" 
+              [(ngModel)]="tempCity" 
+              class="modal-input-text"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Property Type / Unit Details -->
+      <div class="filter-section">
+        <h3><span class="material-icons">corporate_fare</span> Property & Unit Types</h3>
+        <div class="fields-grid">
+          <div class="field-item">
+            <label>Project Type</label>
+            <select [(ngModel)]="tempProjectType">
+              <option value="ALL">All Project Types</option>
+              <option value="RESIDENTIAL">Residential</option>
+              <option value="COMMERCIAL">Commercial</option>
+              <option value="MIXED_USE">Commercial & Residential</option>
+            </select>
+          </div>
+
+          <div class="field-item">
+            <label>Unit Type</label>
+            <select [(ngModel)]="tempUnitType" [disabled]="tempProjectType === 'RESIDENTIAL'">
+              <option value="ALL">All Unit Types</option>
+              <option value="SHOP">Shops</option>
+              <option value="OFFICE">Offices</option>
+              <option value="FLAT">Flats</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Specs & Ranges -->
+      <div class="filter-section">
+        <h3><span class="material-icons">payments</span> Price Range</h3>
+        <div class="fields-grid">
+          <div class="field-item">
+            <label>Min Price (₹)</label>
+            <input 
+              type="number" 
+              placeholder="Min Price" 
+              [(ngModel)]="tempMinPrice" 
+              class="modal-input-text"
+            />
+          </div>
+          <div class="field-item">
+            <label>Max Price (₹)</label>
+            <input 
+              type="number" 
+              placeholder="Max Price" 
+              [(ngModel)]="tempMaxPrice" 
+              class="modal-input-text"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Specifications -->
+      <!-- <div class="filter-section">
+        <h3><span class="material-icons">straighten</span> Project Details</h3>
+        <div class="fields-grid">
+          <div class="field-item">
+            <label>Min Area (Sq Ft)</label>
+            <input 
+              type="number" 
+              placeholder="Min Area" 
+              [(ngModel)]="tempMinArea" 
+              class="modal-input-text"
+            />
+          </div>
+          <div class="field-item">
+            <label>Max Area (Sq Ft)</label>
+            <input 
+              type="number" 
+              placeholder="Max Area" 
+              [(ngModel)]="tempMaxArea" 
+              class="modal-input-text"
+            />
+          </div>
+
+          <div class="field-item">
+            <label>Max Distance (km)</label>
+            <select [(ngModel)]="tempDistance">
+              <option [ngValue]="null">Any Distance</option>
+              <option [ngValue]="2">Within 2 km</option>
+              <option [ngValue]="5">Within 5 km</option>
+              <option [ngValue]="10">Within 10 km</option>
+              <option [ngValue]="25">Within 25 km</option>
+              <option [ngValue]="50">Within 50 km</option>
+            </select>
+          </div>
+        </div>
+      </div> -->
+
+      <!-- Section 5: Project Dates -->
+      <!-- <div class="filter-section">
+        <h3><span class="material-icons">calendar_today</span> Timeline</h3>
+        <div class="fields-grid">
+          <div class="field-item">
+            <label>Construction Start After</label>
+            <input type="date" [(ngModel)]="tempStartDate" class="modal-input-text" />
+          </div>
+          <div class="field-item">
+            <label>Completion Before</label>
+            <input type="date" [(ngModel)]="tempEndDate" class="modal-input-text" />
+          </div>
+        </div>
+      </div> -->
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button class="btn-clear-modal" (click)="clearAllFilters()">
+        <span class="material-icons">clear_all</span> Clear All
+      </button>
+      <button class="btn-search-modal" (click)="applyStagedFilters()">
+        <span class="material-icons">search</span> Search
+      </button>
     </div>
   </div>
 </div>

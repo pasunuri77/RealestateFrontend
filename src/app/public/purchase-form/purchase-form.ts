@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PurchaseService } from '../../core/services/purchase.service';
 import { ShopUnitService } from '../../core/services/shop-unit.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ShopUnit } from '../../models/shop-unit.model';
 
 @Component({
@@ -19,6 +20,7 @@ export class PublicPurchaseFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private purchaseService = inject(PurchaseService);
   private shopUnitService = inject(ShopUnitService);
+  private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
 
   unitId!: number;
@@ -42,6 +44,16 @@ export class PublicPurchaseFormComponent implements OnInit {
         this.loadUnitDetails(this.unitId);
       }
     });
+
+    // Auto-fill from active user session
+    const currentUser = this.authService.currentUserSignal();
+    if (currentUser) {
+      this.purchaseForm.patchValue({
+        customerName: currentUser.name || '',
+        email: currentUser.email || '',
+        phone: currentUser.phone || ''
+      });
+    }
   }
 
   loadUnitDetails(id: number) {

@@ -1,0 +1,393 @@
+<div class="profile-container">
+  <div class="profile-card">
+    <!-- Redesigned Profile Header Area -->
+    <div class="profile-hero">
+      <div class="avatar-wrapper">
+        <div class="user-avatar-circle">
+          <span>{{ getInitials() }}</span>
+        </div>
+        <span class="status-badge">
+          <span class="material-icons badge-icon">verified</span>
+          <span>Verified Account</span>
+        </span>
+      </div>
+      <div class="hero-info">
+        <h2>{{ getFullName() }}</h2>
+        <p class="hero-email">{{ getEmail() }}</p>
+      </div>
+    </div>
+
+    <!-- Alert Messages -->
+    @if (errorMessage) {
+      <div class="error-alert">
+        <span class="material-icons alert-icon">error_outline</span>
+        <span>{{ errorMessage }}</span>
+      </div>
+    }
+
+    @if (successMessage) {
+      <div class="success-alert">
+        <span class="material-icons alert-icon">check_circle_outline</span>
+        <span>{{ successMessage }}</span>
+      </div>
+    }
+
+    <!-- Main Profile Info Form -->
+    @if (profileForm) {
+      <form [formGroup]="profileForm" (ngSubmit)="onSubmitProfile()" class="profile-form">
+        <h3 class="section-title">Personal Details</h3>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <div class="input-wrapper">
+              <span class="material-icons input-icon">person</span>
+              <input 
+                type="text" 
+                id="firstName" 
+                formControlName="firstName" 
+                placeholder="First name"
+                [class.error]="isFieldInvalid('profile', 'firstName')"
+              />
+            </div>
+            @if (isFieldInvalid('profile', 'firstName')) {
+              <span class="error-msg">First name is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <div class="input-wrapper">
+              <span class="material-icons input-icon">person</span>
+              <input 
+                type="text" 
+                id="lastName" 
+                formControlName="lastName" 
+                placeholder="Last name"
+                [class.error]="isFieldInvalid('profile', 'lastName')"
+              />
+            </div>
+            @if (isFieldInvalid('profile', 'lastName')) {
+              <span class="error-msg">Last name is required</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="phone">Phone Number</label>
+            <div class="input-wrapper">
+              <span class="material-icons input-icon">phone</span>
+              <input 
+                type="text" 
+                id="phone" 
+                formControlName="phone" 
+                placeholder="10-digit phone number"
+                maxlength="10"
+                [class.error]="isFieldInvalid('profile', 'phone')"
+              />
+            </div>
+            @if (isFieldInvalid('profile', 'phone')) {
+              <span class="error-msg">A valid 10-digit phone number is required</span>
+            }
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <div class="email-input-container">
+              <div class="input-wrapper readonly-wrapper">
+                <span class="material-icons input-icon">email</span>
+                <input 
+                  type="email" 
+                  id="email" 
+                  formControlName="email" 
+                  readonly
+                  class="readonly-input"
+                />
+              </div>
+              <button type="button" class="btn-change-email" (click)="openEmailChange()">
+                Change Email
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button type="button" class="btn-secondary btn-pwd-trigger" (click)="openPasswordChange()">
+            <span class="material-icons">lock_reset</span>
+            <span>Change Password</span>
+          </button>
+          <button type="submit" class="btn-submit" [disabled]="profileForm.invalid || isLoading">
+            <span class="material-icons">save</span>
+            @if (isLoading) {
+              <span>Saving Changes...</span>
+            } @else {
+              <span>Save Profile</span>
+            }
+          </button>
+        </div>
+      </form>
+    }
+
+    <!-- OTP Email Change Modal/Overlay -->
+    @if (showEmailChangeFlow) {
+      <div class="email-modal-overlay">
+        <div class="email-modal-card">
+          <div class="modal-header">
+            <h3>Change Email Address</h3>
+            <button type="button" class="btn-close" (click)="closeEmailChange()">&times;</button>
+          </div>
+
+          @if (emailChangeError) {
+            <div class="error-alert">
+              <span class="material-icons alert-icon">error_outline</span>
+              <span>{{ emailChangeError }}</span>
+            </div>
+          }
+
+          @if (emailChangeSuccess) {
+            <div class="success-alert">
+              <span class="material-icons alert-icon">check_circle_outline</span>
+              <span>{{ emailChangeSuccess }}</span>
+            </div>
+          }
+
+          <form [formGroup]="emailChangeForm" class="modal-form">
+            @if (emailChangeStep === 'REQUEST') {
+              <div class="form-group">
+                <label for="newEmail">Enter New Email Address</label>
+                <div class="input-wrapper">
+                  <span class="material-icons input-icon">mail_outline</span>
+                  <input 
+                    type="email" 
+                    id="newEmail" 
+                    formControlName="newEmail" 
+                    placeholder="newemail@domain.com"
+                    [class.error]="isFieldInvalid('email', 'newEmail')"
+                  />
+                </div>
+                @if (isFieldInvalid('email', 'newEmail')) {
+                  <span class="error-msg">A valid email is required</span>
+                }
+              </div>
+
+              <button 
+                type="button" 
+                class="btn-submit" 
+                (click)="sendEmailChangeOtp()"
+                [disabled]="emailChangeForm.get('newEmail')?.invalid || emailChangeLoading"
+              >
+                @if (emailChangeLoading) {
+                  <span>Sending Verification Code...</span>
+                } @else {
+                  <span>Send Verification Code</span>
+                }
+              </button>
+            }
+
+            @if (emailChangeStep === 'VERIFY') {
+              <div class="verify-instructions">
+                <p>We've sent a 6-digit OTP code to <strong>{{ pendingNewEmail }}</strong>. Enter it below to complete the change.</p>
+              </div>
+
+              <div class="form-group">
+                <label for="pin">Verification OTP Pin</label>
+                <div class="input-wrapper">
+                  <span class="material-icons input-icon">pin</span>
+                  <input 
+                    type="text" 
+                    id="pin" 
+                    formControlName="pin" 
+                    placeholder="Enter 6-digit PIN"
+                    maxlength="6"
+                    [class.error]="isFieldInvalid('email', 'pin')"
+                  />
+                </div>
+                @if (isFieldInvalid('email', 'pin')) {
+                  <span class="error-msg">A valid 6-digit OTP is required</span>
+                }
+              </div>
+
+              <div class="modal-action-buttons">
+                <button 
+                  type="button" 
+                  class="btn-secondary" 
+                  (click)="emailChangeStep = 'REQUEST'"
+                  [disabled]="emailChangeLoading"
+                >
+                  Back
+                </button>
+                <button 
+                  type="button" 
+                  class="btn-submit" 
+                  (click)="confirmEmailChange()"
+                  [disabled]="emailChangeForm.invalid || emailChangeLoading"
+                >
+                  @if (emailChangeLoading) {
+                    <span>Confirming...</span>
+                  } @else {
+                    <span>Confirm & Change</span>
+                  }
+                </button>
+              </div>
+            }
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- OTP Password Change Modal/Overlay -->
+    @if (showPasswordChangeFlow) {
+      <div class="email-modal-overlay">
+        <div class="email-modal-card">
+          <div class="modal-header">
+            <h3>Change Account Password</h3>
+            <button type="button" class="btn-close" (click)="closePasswordChange()">&times;</button>
+          </div>
+
+          @if (passwordChangeError) {
+            <div class="error-alert">
+              <span class="material-icons alert-icon">error_outline</span>
+              <span>{{ passwordChangeError }}</span>
+            </div>
+          }
+
+          @if (passwordChangeSuccess) {
+            <div class="success-alert">
+              <span class="material-icons alert-icon">check_circle_outline</span>
+              <span>{{ passwordChangeSuccess }}</span>
+            </div>
+          }
+
+          <form [formGroup]="passwordChangeForm" class="modal-form">
+            @if (passwordChangeStep === 'REQUEST') {
+              <div class="verify-instructions">
+                <p>To change your password, we need to send a 6-digit OTP code to your current registered email address.</p>
+              </div>
+
+              <button 
+                type="button" 
+                class="btn-submit" 
+                (click)="sendPasswordChangeOtp()"
+                [disabled]="passwordChangeLoading"
+              >
+                @if (passwordChangeLoading) {
+                  <span>Sending Verification Code...</span>
+                } @else {
+                  <span>Send Verification Code</span>
+                }
+              </button>
+            }
+
+            @if (passwordChangeStep === 'VERIFY') {
+              <div class="form-group">
+                <label for="pwdPin">Enter Verification OTP</label>
+                <div class="input-wrapper">
+                  <span class="material-icons input-icon">pin</span>
+                  <input 
+                    type="text" 
+                    id="pwdPin" 
+                    formControlName="pin" 
+                    placeholder="Enter 6-digit PIN"
+                    maxlength="6"
+                    [class.error]="isFieldInvalid('password', 'pin')"
+                  />
+                </div>
+                @if (isFieldInvalid('password', 'pin')) {
+                  <span class="error-msg">A valid 6-digit OTP is required</span>
+                }
+              </div>
+
+              <button 
+                type="button" 
+                class="btn-submit" 
+                (click)="verifyPasswordChangeOtp()"
+                [disabled]="passwordChangeForm.get('pin')?.invalid || passwordChangeLoading"
+              >
+                @if (passwordChangeLoading) {
+                  <span>Verifying OTP...</span>
+                } @else {
+                  <span>Verify OTP Code</span>
+                }
+              </button>
+            }
+
+            @if (passwordChangeStep === 'UPDATE') {
+              <div class="form-group password-group">
+                <label for="newPassword">New Password</label>
+                <div class="password-input-container">
+                  <div class="input-wrapper">
+                    <span class="material-icons input-icon">lock</span>
+                    <input 
+                      [type]="showNewPassword ? 'text' : 'password'" 
+                      id="newPassword" 
+                      formControlName="newPassword" 
+                      placeholder="Min 8 chars, uppercase, lowercase, number, symbol"
+                      [class.error]="isFieldInvalid('password', 'newPassword')"
+                    />
+                  </div>
+                  <button type="button" class="btn-toggle-visibility" (click)="showNewPassword = !showNewPassword" tabIndex="-1">
+                    <span class="material-icons">{{ showNewPassword ? 'visibility_off' : 'visibility' }}</span>
+                  </button>
+                </div>
+                @if (isFieldInvalid('password', 'newPassword')) {
+                  <span class="error-msg">Password must meet complexity requirements (Min 8 chars, 1 Uppercase, 1 Lowercase, 1 Number, 1 Special char)</span>
+                }
+
+                <!-- Password Strength Indicator -->
+                @if (passwordChangeForm.get('newPassword')?.value) {
+                  <div class="strength-indicator-wrapper">
+                    <span class="strength-text">Password Strength: 
+                      <strong [class]="getPasswordStrength().toLowerCase()">{{ getPasswordStrength() }}</strong>
+                    </span>
+                    <div class="strength-bar-container">
+                      <div class="strength-bar-fill" [class]="getPasswordStrength().toLowerCase()"></div>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <div class="form-group password-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <div class="password-input-container">
+                  <div class="input-wrapper">
+                    <span class="material-icons input-icon">lock</span>
+                    <input 
+                      [type]="showConfirmPassword ? 'text' : 'password'" 
+                      id="confirmPassword" 
+                      formControlName="confirmPassword" 
+                      placeholder="Confirm new password"
+                      [class.error]="isFieldInvalid('password', 'confirmPassword') || isMismatchInvalid()"
+                    />
+                  </div>
+                  <button type="button" class="btn-toggle-visibility" (click)="showConfirmPassword = !showConfirmPassword" tabIndex="-1">
+                    <span class="material-icons">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</span>
+                  </button>
+                </div>
+                @if (isFieldInvalid('password', 'confirmPassword')) {
+                  <span class="error-msg">Please confirm your password</span>
+                }
+                @if (isMismatchInvalid() && !isFieldInvalid('password', 'confirmPassword')) {
+                  <span class="error-msg">Passwords do not match</span>
+                }
+              </div>
+
+              <button 
+                type="button" 
+                class="btn-submit" 
+                (click)="onSubmitPasswordUpdate()"
+                [disabled]="passwordChangeForm.invalid || passwordChangeLoading"
+              >
+                @if (passwordChangeLoading) {
+                  <span>Updating Password...</span>
+                } @else {
+                  <span>Change Password</span>
+                }
+              </button>
+            }
+          </form>
+        </div>
+      </div>
+    }
+  </div>
+</div>

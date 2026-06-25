@@ -2,10 +2,36 @@
 .admin-header { h1 { font-size: 1.75rem; } p { color: var(--color-text-muted); } }
 
 .table-container { background: var(--color-bg-white); border-radius: var(--radius-lg); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm); overflow: hidden; }
-.admin-table { width: 100%; border-collapse: collapse; text-align: left; th, td { padding: 1rem 1.5rem; border-bottom: 1px solid var(--color-border); } th { background: var(--color-bg-light); color: var(--color-text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; } td { font-size: 0.95rem; } }
+.admin-table { width: 100%; border-collapse: collapse; text-align: left; th, td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--color-border); vertical-align: middle; } th { background: var(--color-bg-light); color: var(--color-text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; } td { font-size: 0.95rem; } }
 .subtext { font-size: 0.8rem; color: var(--color-text-light); }
 .price-accent { color: #8A6D1C; }
 .msg-col { max-width: 250px; font-size: 0.85rem; color: var(--color-text-muted); }
 
 .btn-delete { border: none; padding: 0.4rem 0.85rem; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: var(--transition-smooth); background: #FEE2E2; color: #991B1B; &:hover { background: #EF4444; color: #FFF; } }
 .loading, .empty-state { text-align: center; padding: 2rem; color: var(--color-text-light); }
+
+.status-badge { font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: var(--radius-sm); color: #FFF; text-transform: uppercase; &.approved { background: #16A34A; } &.pending { background: var(--color-accent); } &.rejected { background: #EF4444; } &.contacted { background: #2563EB; } &.converted { background: #0D9488; } }
+
+.status-select {
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-white);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  cursor: pointer;
+  outline: none;
+  transition: var(--transition-smooth);
+  margin-right: 0.5rem;
+  &:focus {
+    border-color: var(--color-accent);
+  }
+}
+
+.actions-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}

@@ -70,6 +70,31 @@
       <p class="section-subtitle">Browse premium offices, retail outlets, and shop units ready for business setup.</p>
     </div>
 
+    <!-- Filter Buttons to differentiate lease and sale -->
+    <div class="filter-buttons-container">
+      <button 
+        [class.active]="selectedAvailabilityFilter === 'ALL'" 
+        (click)="setAvailabilityFilter('ALL')"
+        class="btn-filter"
+      >
+        <span class="material-icons">grid_view</span> All Units
+      </button>
+      <button 
+        [class.active]="selectedAvailabilityFilter === 'LEASE'" 
+        (click)="setAvailabilityFilter('LEASE')"
+        class="btn-filter"
+      >
+        <span class="material-icons">description</span> For Lease
+      </button>
+      <button 
+        [class.active]="selectedAvailabilityFilter === 'SALE'" 
+        (click)="setAvailabilityFilter('SALE')"
+        class="btn-filter"
+      >
+        <span class="material-icons">monetization_on</span> For Sale
+      </button>
+    </div>
+
     <div *ngIf="isLoadingUnits" class="loading-state">
       <span class="material-icons rotating-icon">sync</span>
       <p>Loading unit options...</p>

@@ -37,6 +37,42 @@ export class PropertyMapSectionComponent implements OnInit, AfterViewInit, OnCha
   filterPriceRange = 'ALL';
   filterAvailability = 'ALL';
 
+  // Advanced Advanced Filter States
+  isFilterAllModalOpen = false;
+  
+  filterCountry = 'ALL';
+  filterState = 'ALL';
+  filterCity = '';
+  filterMinPrice: number | null = null;
+  filterMaxPrice: number | null = null;
+  filterDistance: number | null = null;
+  filterMinArea: number | null = null;
+  filterMaxArea: number | null = null;
+  filterStartDate = '';
+  filterEndDate = '';
+
+  // Staged Advanced Filters (in Modal)
+  tempCountry = 'ALL';
+  tempState = 'ALL';
+  tempCity = '';
+  tempProjectType = 'ALL';
+  tempUnitType = 'ALL';
+  tempMinPrice: number | null = null;
+  tempMaxPrice: number | null = null;
+  tempDistance: number | null = null;
+  tempMinArea: number | null = null;
+  tempMaxArea: number | null = null;
+  tempStartDate = '';
+  tempEndDate = '';
+
+  // Country & Dependent States
+  countries = [
+    { name: 'India', states: ['Andhra Pradesh', 'Hyderabad', 'Karnataka', 'Maharashtra', 'Tamil Nadu', 'Delhi', 'Gujarat', 'Kerala', 'Uttar Pradesh', 'West Bengal'] },
+    { name: 'United States', states: ['California', 'New York', 'Texas', 'Florida'] },
+    { name: 'United Arab Emirates', states: ['Dubai', 'Abu Dhabi', 'Sharjah'] }
+  ];
+  availableStates: string[] = [];
+
   ngOnInit() {
     this.applyFilters();
   }
@@ -48,6 +84,13 @@ export class PropertyMapSectionComponent implements OnInit, AfterViewInit, OnCha
   ngOnChanges(changes: SimpleChanges) {
     if (changes['projects'] || changes['filterProjectType'] || changes['filterUnitType']) {
       this.applyFilters();
+      if (this.map) {
+        setTimeout(() => {
+          this.map.invalidateSize();
+          this.fitMapToBounds();
+          this.cdr.detectChanges();
+        }, 150);
+      }
     }
   }
 
@@ -100,13 +143,17 @@ export class PropertyMapSectionComponent implements OnInit, AfterViewInit, OnCha
         if (this.filterUnitType === 'FLAT' && type === 'COMMERCIAL') return false;
       }
 
-      // 3. Price Filter
-      if (this.filterPriceRange !== 'ALL') {
+      // 3. Price Filter (basic + custom inputs)
+      if (this.filterPriceRange !== 'ALL' && this.filterPriceRange !== 'CUSTOM') {
         const startPrice = project.startingPrice || 1500000;
         if (this.filterPriceRange === 'UNDER_10L' && startPrice >= 1000000) return false;
         if (this.filterPriceRange === '10L_50L' && (startPrice < 1000000 || startPrice > 5000000)) return false;
         if (this.filterPriceRange === '50L_1C' && (startPrice < 5000000 || startPrice > 10000000)) return false;
         if (this.filterPriceRange === 'ABOVE_1C' && startPrice <= 10000000) return false;
+      } else if (this.filterPriceRange === 'CUSTOM' || this.filterMinPrice !== null || this.filterMaxPrice !== null) {
+        const startPrice = project.startingPrice || 1500000;
+        if (this.filterMinPrice !== null && startPrice < this.filterMinPrice) return false;
+        if (this.filterMaxPrice !== null && startPrice > this.filterMaxPrice) return false;
       }
 
       // 4. Availability/Status Filter
@@ -115,9 +162,51 @@ export class PropertyMapSectionComponent implements OnInit, AfterViewInit, OnCha
         if (status !== this.filterAvailability) return false;
       }
 
-      // 5. Proximity filter (Only if location has been searched, within 50 km default)
-      if (this.hasSearchedLocation && project.distance !== undefined && project.distance > 50) {
+      // 5. Proximity filter
+      const distLimit = this.filterDistance !== null ? this.filterDistance : (this.hasSearchedLocation ? 50 : null);
+      if (distLimit !== null && project.distance !== undefined && project.distance > distLimit) {
         return false;
+      }
+
+      // 6. Country Filter
+      if (this.filterCountry !== 'ALL') {
+        if ((project.country || '').toUpperCase() !== this.filterCountry.toUpperCase()) return false;
+      }
+
+      // 7. State Filter
+      if (this.filterState !== 'ALL') {
+        const pState = (project.state || '').toUpperCase();
+        const fState = this.filterState.toUpperCase();
+        if (pState !== fState && !(fState === 'HYDERABAD' && pState === 'TELANGANA') && !(fState === 'TELANGANA' && pState === 'HYDERABAD')) {
+          return false;
+        }
+      }
+
+      // 8. City/Area Search
+      if (this.filterCity && this.filterCity.trim() !== '') {
+        const query = this.filterCity.toLowerCase();
+        const cityMatch = (project.city || '').toLowerCase().includes(query);
+        const locMatch = (project.location || '').toLowerCase().includes(query);
+        if (!cityMatch && !locMatch) return false;
+      }
+
+      // 9. Area Range Filter (Min & Max sq ft)
+      if (this.filterMinArea !== null || this.filterMaxArea !== null) {
+        const area = project.area || 1000;
+        if (this.filterMinArea !== null && area < this.filterMinArea) return false;
+        if (this.filterMaxArea !== null && area > this.filterMaxArea) return false;
+      }
+
+      // 10. Start Date & End Date Filters
+      if (this.filterStartDate) {
+        const projStart = new Date(project.startDate);
+        const filterStart = new Date(this.filterStartDate);
+        if (projStart < filterStart) return false;
+      }
+      if (this.filterEndDate) {
+        const projEnd = new Date(project.completedDate || project.expectedCompletionDate || project.startDate);
+        const filterEnd = new Date(this.filterEndDate);
+        if (projEnd > filterEnd) return false;
       }
 
       return true;
@@ -132,22 +221,28 @@ export class PropertyMapSectionComponent implements OnInit, AfterViewInit, OnCha
 
     this.markersGroup.clearLayers();
 
-    const defaultIcon = L.icon({
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41]
+    const defaultIcon = L.divIcon({
+      html: `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#123047" width="28" height="28">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+        </svg>
+      `,
+      className: 'custom-leaflet-marker',
+      iconSize: [28, 28],
+      iconAnchor: [14, 28],
+      popupAnchor: [0, -28]
     });
 
-    const activeIcon = L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41]
+    const activeIcon = L.divIcon({
+      html: `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#D9A441" width="34" height="34">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+        </svg>
+      `,
+      className: 'custom-leaflet-marker-active',
+      iconSize: [34, 34],
+      iconAnchor: [17, 34],
+      popupAnchor: [0, -34]
     });
 
     this.filteredProjects.forEach(project => {
@@ -199,11 +294,117 @@ export class PropertyMapSectionComponent implements OnInit, AfterViewInit, OnCha
     this.filterPriceRange = 'ALL';
     this.filterAvailability = 'ALL';
     this.hasSearchedLocation = false;
+
+    // Reset advanced filters
+    this.filterCountry = 'ALL';
+    this.filterState = 'ALL';
+    this.filterCity = '';
+    this.filterMinPrice = null;
+    this.filterMaxPrice = null;
+    this.filterDistance = null;
+    this.filterMinArea = null;
+    this.filterMaxArea = null;
+    this.filterStartDate = '';
+    this.filterEndDate = '';
+
+    // Synchronize staged modal filters
+    this.tempCountry = 'ALL';
+    this.tempState = 'ALL';
+    this.availableStates = [];
+    this.tempCity = '';
+    this.tempProjectType = 'ALL';
+    this.tempUnitType = 'ALL';
+    this.tempMinPrice = null;
+    this.tempMaxPrice = null;
+    this.tempDistance = null;
+    this.tempMinArea = null;
+    this.tempMaxArea = null;
+    this.tempStartDate = '';
+    this.tempEndDate = '';
+
     this.filterChanged.emit({ projectType: 'ALL', unitType: 'ALL', hasSearchedLocation: false });
     this.applyFilters();
     setTimeout(() => {
       this.fitMapToBounds();
     }, 200);
+  }
+
+  // Modal Handlers
+  openFilterAllModal() {
+    this.tempCountry = this.filterCountry;
+    this.onCountryChange(this.tempCountry);
+    this.tempState = this.filterState;
+    this.tempCity = this.filterCity;
+    this.tempProjectType = this.filterProjectType;
+    this.tempUnitType = this.filterUnitType;
+    this.tempMinPrice = this.filterMinPrice;
+    this.tempMaxPrice = this.filterMaxPrice;
+    this.tempDistance = this.filterDistance;
+    this.tempMinArea = this.filterMinArea;
+    this.tempMaxArea = this.filterMaxArea;
+    this.tempStartDate = this.filterStartDate;
+    this.tempEndDate = this.filterEndDate;
+    
+    this.isFilterAllModalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  closeFilterAllModal() {
+    this.isFilterAllModalOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  onCountryChange(countryName: string) {
+    const country = this.countries.find(c => c.name === countryName);
+    this.availableStates = country ? country.states : [];
+    if (!this.availableStates.includes(this.tempState)) {
+      this.tempState = 'ALL';
+    }
+  }
+
+  applyStagedFilters() {
+    this.filterCountry = this.tempCountry;
+    this.filterState = this.tempState;
+    this.filterCity = this.tempCity;
+    this.filterProjectType = this.tempProjectType;
+    this.filterUnitType = this.tempUnitType;
+    this.filterMinPrice = this.tempMinPrice;
+    this.filterMaxPrice = this.tempMaxPrice;
+    this.filterDistance = this.tempDistance;
+    this.filterMinArea = this.tempMinArea;
+    this.filterMaxArea = this.tempMaxArea;
+    this.filterStartDate = this.tempStartDate;
+    this.filterEndDate = this.tempEndDate;
+
+    if (this.filterMinPrice !== null || this.filterMaxPrice !== null) {
+      this.filterPriceRange = 'CUSTOM';
+    } else {
+      this.filterPriceRange = 'ALL';
+    }
+
+    this.applyFilters();
+    this.closeFilterAllModal();
+    setTimeout(() => {
+      this.fitMapToBounds();
+    }, 200);
+  }
+
+  clearAllFilters() {
+    this.tempCountry = 'ALL';
+    this.tempState = 'ALL';
+    this.availableStates = [];
+    this.tempCity = '';
+    this.tempProjectType = 'ALL';
+    this.tempUnitType = 'ALL';
+    this.tempMinPrice = null;
+    this.tempMaxPrice = null;
+    this.tempDistance = null;
+    this.tempMinArea = null;
+    this.tempMaxArea = null;
+    this.tempStartDate = '';
+    this.tempEndDate = '';
+
+    this.applyStagedFilters();
   }
 
   onCardClick(project: Project) {

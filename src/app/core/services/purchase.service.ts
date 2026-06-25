@@ -24,6 +24,10 @@ export class PurchaseService {
     return this.http.get<PurchaseRequest>(`${this.apiUrl}/${id}`);
   }
 
+  updatePurchaseStatus(id: number, status: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}/status/${status}`, {});
+  }
+
   deletePurchaseRequest(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }

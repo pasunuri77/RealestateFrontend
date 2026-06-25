@@ -15,8 +15,30 @@
         @if (authService.isAdmin()) {
           <a routerLink="/admin/dashboard" class="nav-link admin-highlight">Admin Panel</a>
         }
-        <span class="user-greeting">Hello, {{ authService.currentUserSignal()?.name }}</span>
-        <button class="btn-logout" (click)="onLogout()">Logout</button>
+        <div class="user-dropdown-container">
+          <button 
+            type="button" 
+            class="dropdown-trigger" 
+            (click)="toggleDropdown($event)"
+            [class.active]="isDropdownOpen"
+            aria-haspopup="true"
+            [attr.aria-expanded]="isDropdownOpen"
+          >
+            <span class="user-greeting-text">Hello, {{ getFirstName() }}</span>
+            <span class="material-icons chevron-icon" [class.rotated]="isDropdownOpen">expand_more</span>
+          </button>
+          
+          <div class="dropdown-menu" [class.show]="isDropdownOpen" role="menu">
+            <a routerLink="/profile" (click)="closeDropdown()" class="dropdown-item" role="menuitem">
+              <span class="material-icons dropdown-icon">person</span>
+              <span>Profile</span>
+            </a>
+            <button (click)="onLogout()" class="dropdown-item logout-item" role="menuitem">
+              <span class="material-icons dropdown-icon">logout</span>
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
       } @else {
         <a routerLink="/" class="nav-link">Home</a>
         <a routerLink="/projects" class="nav-link">Projects</a>
@@ -46,7 +68,8 @@
         @if (authService.isAdmin()) {
           <a routerLink="/admin/dashboard" (click)="closeMobileMenu()" class="mobile-link admin-highlight">Admin Panel</a>
         }
-        <span class="user-greeting-mobile">Hello, {{ authService.currentUserSignal()?.name }}</span>
+        <span class="user-greeting-mobile">Hello, {{ getFirstName() }}</span>
+        <a routerLink="/profile" (click)="closeMobileMenu()" class="mobile-link">Profile</a>
         <button class="btn-logout-mobile" (click)="onLogout()">Logout</button>
       } @else {
         <a routerLink="/" (click)="closeMobileMenu()" class="mobile-link">Home</a>

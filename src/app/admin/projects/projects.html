@@ -1,35 +1,299 @@
 <div class="projects-admin">
   <div class="admin-header">
     <div>
-      <h1>Manage Projects</h1>
-      <p>Configure property developments, schedules, and completion states.</p>
+      <h1>Project Management</h1>
+      <p>Configure property developments, building blocks, floors, and shop units hierarchically.</p>
     </div>
-    <button class="btn-add" (click)="openAddForm()">Add Project</button>
+    <button class="btn-add" (click)="openAddProject()">
+      <span class="material-icons">add_circle</span> Add Project
+    </button>
   </div>
 
-  <!-- inline Form Modal -->
-  @if (showForm) {
-  <div class="form-modal">
-    <div class="modal-card">
-      <h2>{{ isEditMode ? 'Edit Project' : 'New Project' }}</h2>
-      <form [formGroup]="projectForm" (ngSubmit)="onSubmit()">
+  @if (isLoading) {
+  <div class="loading">
+    <span class="material-icons rotating-icon">sync</span> Loading project hierarchy...
+  </div>
+  } @else {
+  <div class="hierarchy-container">
+    @for (p of projects; track p.id) {
+    <div class="project-node" [class.expanded]="expandedProjects[p.id!]">
+      <!-- Project Header Card -->
+      <div class="node-header project-header">
+        <div class="header-left" (click)="toggleProject(p.id!)">
+          <span class="material-icons expand-arrow">
+            {{ expandedProjects[p.id!] ? 'expand_more' : 'chevron_right' }}
+          </span>
+          <span class="material-icons brand-icon">construction</span>
+          <div class="node-title-info">
+            <h3>{{ p.name }}</h3>
+            <span class="node-subtitle">{{ p.location }}</span>
+          </div>
+        </div>
+
+        <div class="node-stats">
+          <span class="stat-badge"><span class="material-icons">corporate_fare</span> {{
+            getBuildingsForProject(p.id!).length }} Buildings</span>
+          <span class="stat-badge"><span class="material-icons">layers</span> {{ getFloorsCountForProject(p.id!) }}
+            Floors</span>
+          <span class="stat-badge"><span class="material-icons">storefront</span> {{ getUnitsCountForProject(p.id!) }}
+            Units</span>
+          <span class="type-badge">{{ p.projectType === 'MIXED_USE' ? 'Commercial & Residential' : (p.projectType ===
+            'COMMERCIAL' ? 'Commercial' : 'Residential') }}</span>
+          <span class="status-badge" [class]="p.status.toLowerCase()">{{ p.status }}</span>
+        </div>
+
+        <div class="node-actions">
+          <button class="btn-action-add" (click)="openAddBuilding(p.id!)" title="Add Building">
+            <span class="material-icons">domain</span>
+          </button>
+          <button class="btn-edit-icon" (click)="openEditProject(p)" title="Edit Project">
+            <span class="material-icons">edit</span>
+          </button>
+          <button class="btn-delete-icon" (click)="onDeleteProject(p.id!)" title="Delete Project">
+            <span class="material-icons">delete</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Project Expanded: Buildings List -->
+      @if (expandedProjects[p.id!]) {
+      <div class="node-children building-list">
+        @for (b of getBuildingsForProject(p.id!); track b.id) {
+        <div class="building-node" [class.expanded]="expandedBuildings[b.id!]">
+
+          <!-- Building Header -->
+          <div class="node-header building-header">
+            <div class="header-left" (click)="toggleBuilding(b.id!)">
+              <span class="material-icons expand-arrow">
+                {{ expandedBuildings[b.id!] ? 'expand_more' : 'chevron_right' }}
+              </span>
+              <span class="material-icons brand-icon">corporate_fare</span>
+              <div class="node-title-info">
+                <h4>{{ b.name }}</h4>
+                <span class="node-subtitle">{{ b.description || 'No description provided' }}</span>
+              </div>
+            </div>
+
+            <div class="node-stats">
+              <span class="stat-badge"><span class="material-icons">layers</span> {{ getFloorsForBuilding(b.id!).length
+                }} Floors</span>
+              <span class="stat-badge"><span class="material-icons">storefront</span> {{ getUnitsCountForBuilding(b.id!)
+                }} Units</span>
+            </div>
+
+            <div class="node-actions">
+              <button class="btn-action-add" (click)="openAddFloor(p.id!, b.id!)" title="Add Floor">
+                <span class="material-icons">layers</span>
+              </button>
+              <button class="btn-edit-icon" (click)="openEditBuilding(b)" title="Edit Building">
+                <span class="material-icons">edit</span>
+              </button>
+              <button class="btn-delete-icon" (click)="onDeleteBuilding(b.id!)" title="Delete Building">
+                <span class="material-icons">delete</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Building Expanded: Floors List -->
+          @if (expandedBuildings[b.id!]) {
+          <div class="node-children floor-list">
+            @for (f of getFloorsForBuilding(b.id!); track f.id) {
+            <div class="floor-node" [class.expanded]="expandedFloors[f.id!]">
+
+              <!-- Floor Header -->
+              <div class="node-header floor-header">
+                <div class="header-left" (click)="toggleFloor(f.id!)">
+                  <span class="material-icons expand-arrow">
+                    {{ expandedFloors[f.id!] ? 'expand_more' : 'chevron_right' }}
+                  </span>
+                  <span class="material-icons brand-icon">layers</span>
+                  <div class="node-title-info">
+                    <h5>{{ f.floorName }} <span class="floor-number-badge">Level {{ f.floorNumber }}</span></h5>
+                    <span class="node-subtitle">{{ f.description || 'No description provided' }}</span>
+                  </div>
+                </div>
+
+                <div class="node-stats">
+                  <span class="stat-badge"><span class="material-icons">storefront</span> {{
+                    getUnitsForFloor(f.id!).length }} / {{ f.units }} Units</span>
+                </div>
+
+                <div class="node-actions">
+                  <button class="btn-action-add" (click)="openAddUnit(p.id!, b.id!, f.id!)" title="Add Unit">
+                    <span class="material-icons">storefront</span>
+                  </button>
+                  <button class="btn-edit-icon" (click)="openEditFloor(f)" title="Edit Floor">
+                    <span class="material-icons">edit</span>
+                  </button>
+                  <button class="btn-delete-icon" (click)="onDeleteFloor(f.id!)" title="Delete Floor">
+                    <span class="material-icons">delete</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Floor Expanded: Units Table -->
+              @if (expandedFloors[f.id!]) {
+              <div class="node-children unit-list">
+                <div class="table-container">
+                  <table class="admin-table unit-table">
+                    <thead>
+                      <tr>
+                        <th>Unit No.</th>
+                        <th>Type</th>
+                        <th>Area (Sqft)</th>
+                        <th>Rent/Price</th>
+                        <th>Availability</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (u of getUnitsForFloor(f.id!); track u.shopOrUnitId) {
+                      <tr>
+                        <td><strong>{{ u.unitNumber }}</strong></td>
+                        <td>{{ u.unitType }}</td>
+                        <td>{{ u.areaSqft }} sqft</td>
+                        <td>
+                          @if (u.availabilityType === 'LEASE') {
+                          ₹{{ u.monthlyRent | number }}/mo
+                          } @else {
+                          ₹{{ u.salePrice | number }}
+                          }
+                        </td>
+                        <td>
+                          <span class="availability-badge" [class]="u.availabilityType.toLowerCase()"
+                            (click)="redirectToDesignatedPage(u.availabilityType)"
+                            title="View {{ u.availabilityType === 'LEASE' ? 'Lease Requests' : 'Purchases' }}">
+                            {{ u.availabilityType }}
+                          </span>
+                        </td>
+                        <td>
+                          <span class="unit-status-badge" [class]="u.status.toLowerCase()">
+                            {{ u.status }}
+                          </span>
+                        </td>
+                        <td>
+                          <button class="btn-edit-icon" (click)="openEditUnit(u)" title="Edit Unit">
+                            <span class="material-icons">edit</span>
+                          </button>
+                          <button class="btn-delete-icon" (click)="onDeleteUnit(u.shopOrUnitId!)" title="Delete Unit">
+                            <span class="material-icons">delete</span>
+                          </button>
+                        </td>
+                      </tr>
+                      } @empty {
+                      <tr>
+                        <td colspan="7" class="empty-state">No units configured on this floor yet.</td>
+                      </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              }
+            </div>
+            } @empty {
+            <div class="empty-node-message">No floors configured in this building block yet.</div>
+            }
+          </div>
+          }
+        </div>
+        } @empty {
+        <div class="empty-node-message">No buildings configured in this project yet.</div>
+        }
+      </div>
+      }
+    </div>
+    } @empty {
+    <div class="empty-state">No projects found. Add your first project above to begin.</div>
+    }
+  </div>
+  }
+</div>
+
+<!-- Unified Advanced Form Modal -->
+@if (showForm) {
+<div class="form-modal" (click)="closeForm()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+
+    <!-- HEADER -->
+    <div class="modal-header">
+      <h2>
+        @if (activeFormType === 'PROJECT') {
+        {{ isEditMode ? 'Edit Project' : 'New Project' }}
+        } @else if (activeFormType === 'BUILDING') {
+        {{ isEditMode ? 'Edit Building Block' : 'New Building Block' }}
+        } @else if (activeFormType === 'FLOOR') {
+        {{ isEditMode ? 'Edit Floor Level' : 'New Floor Level' }}
+        } @else if (activeFormType === 'UNIT') {
+        {{ isEditMode ? 'Edit Shop Unit' : 'New Shop Unit' }}
+        }
+      </h2>
+      <button class="btn-close-x" (click)="closeForm()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+
+    <!-- ERROR ALERT -->
+    @if (errorMessage) {
+    <div class="error-alert">
+      <span class="material-icons">error</span> {{ errorMessage }}
+    </div>
+    }
+
+    <form (ngSubmit)="onSubmit()">
+
+      <!-- PROJECT FORM -->
+      @if (activeFormType === 'PROJECT') {
+      <div [formGroup]="projectForm">
         <div class="form-group">
           <label>Project Name *</label>
-          <input type="text" formControlName="name" placeholder="e.g. Green Heights residency" />
+          <input type="text" formControlName="name" placeholder="e.g. Green Heights Residency" />
         </div>
-        <div class="form-group">
+
+        <div class="form-group" style="position: relative; margin-bottom: 1rem;">
           <label>Location *</label>
-          <input type="text" formControlName="location" placeholder="e.g. Bangalore" />
+          <div class="search-input-container" style="position: relative;">
+            <span class="material-icons search-input-icon">search</span>
+            <input type="text" formControlName="location" placeholder="Type location to search & select..." 
+              (input)="onSearchInput($event)" (keydown)="onSearchKeydown($event)" (blur)="onSearchBlur()"
+              class="search-input" />
+          </div>
+
+          @if (showSuggestions && (suggestions.length > 0 || isLoadingSuggestions || noSuggestionsFound)) {
+          <ul class="search-suggestions-dropdown">
+            @if (isLoadingSuggestions) {
+            <li class="suggestion-info-item">
+              <span class="material-icons rotating-icon">sync</span> Loading...
+            </li>
+            }
+            @if (noSuggestionsFound && !isLoadingSuggestions) {
+            <li class="suggestion-info-item">No results found</li>
+            }
+            @for (item of suggestions; track item; let i = $index) {
+            <li [class.active]="i === activeSuggestionIndex" (mousedown)="selectSuggestion(item)"
+              (mouseenter)="activeSuggestionIndex = i">
+              <span class="material-icons place-icon">place</span>
+              <div class="suggestion-details">
+                <span class="place-name">{{ item.name }}</span>
+                <span class="place-region">{{ formatDetails(item) }}</span>
+              </div>
+            </li>
+            }
+          </ul>
+          }
         </div>
+
         <div class="form-row">
           <div class="form-group">
             <label>Type *</label>
             <select formControlName="projectType">
               <option value="COMMERCIAL">Commercial</option>
               <option value="RESIDENTIAL">Residential</option>
-              <option value="MIXED_USE">Mixed Use</option>
+              <option value="MIXED_USE">Commercial & Residential</option>
             </select>
           </div>
+
           <div class="form-group">
             <label>Status *</label>
             <select formControlName="status">
@@ -39,16 +303,19 @@
             </select>
           </div>
         </div>
+
         <div class="form-row">
           <div class="form-group">
             <label>Start Date *</label>
             <input type="date" formControlName="startDate" />
           </div>
+
           <div class="form-group">
             <label>Expected Completion *</label>
             <input type="date" formControlName="expectedCompletionDate" />
           </div>
         </div>
+
         <div class="form-group">
           <label>Description</label>
           <textarea formControlName="description" rows="3"
@@ -66,115 +333,197 @@
           </div>
         </div>
 
-        <!-- Location Search Input -->
-        <div class="form-group" style="position: relative; margin-bottom: 1rem;">
-          <label>Search Address / Landmark</label>
-          <div class="search-input-container" style="position: relative;">
-            <span class="material-icons"
-              style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--color-primary); font-size: 1.25rem;">search</span>
-            <input type="text" placeholder="Type location to center on map..." [value]="searchQuery"
-              (input)="onSearchInput($event)" (keydown)="onSearchKeydown($event)" (blur)="onSearchBlur()"
-              style="padding-left: 2.5rem; width: 100%;" />
-          </div>
 
-          <!-- Autocomplete suggestions -->
-          @if (showSuggestions && (suggestions.length > 0 || isLoadingSuggestions || noSuggestionsFound)) {
-          <ul class="search-suggestions-dropdown"
-            style="position: absolute; left: 0; right: 0;top: 70px; background: var(--color-bg-white); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); max-height: 200px; overflow-y: auto; z-index: 1000; list-style: none; padding: 0.25rem 0; margin-top: 0.25rem;">
-            @if (isLoadingSuggestions) {
-            <li
-              style="padding: 0.5rem 1rem; color: var(--color-text-light); font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
-              <span class="material-icons rotating-icon"
-                style="font-size: 1rem; animation: spin 1.5s linear infinite;">sync</span> Loading...
-            </li>
-            }
-            @if (noSuggestionsFound && !isLoadingSuggestions) {
-            <li style="padding: 0.5rem 1rem; color: var(--color-text-light); font-size: 0.85rem;">No results found</li>
-            }
-            @for (item of suggestions; track item; let i = $index) {
-            <li [class.active]="i === activeSuggestionIndex" (mousedown)="selectSuggestion(item)"
-              (mouseenter)="activeSuggestionIndex = i"
-              style="padding: 0.5rem 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; border-bottom: 1px solid var(--color-border);">
-              <span class="material-icons" style="color: var(--color-accent); font-size: 1rem;">place</span>
-              <div
-                style="display: flex; flex-direction: column; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                <span style="font-weight: 700; color: var(--color-text-dark);">{{ item.name }}</span>
-                <span style="font-size: 0.75rem; color: var(--color-text-light);">{{ formatDetails(item) }}</span>
-              </div>
-            </li>
-            }
-          </ul>
-          }
-        </div>
 
-        <!-- Leaflet Map Integration -->
-        <div class="map-container"
-          style="height: 250px; margin-bottom: 1.25rem; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; position: relative;">
+        <!-- Leaflet Map -->
+        <div class="map-container">
           <div id="admin-map" style="width: 100%; height: 100%; z-index: 1;"></div>
         </div>
+      </div>
+      }
 
-        @if (errorMessage) {
-        <div class="error-alert"
-          style="color: #ef4444; background: #fee2e2; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem;">
-          {{ errorMessage }}
+      <!-- BUILDING FORM -->
+      @if (activeFormType === 'BUILDING') {
+      <div [formGroup]="buildingForm">
+        <div class="form-group">
+          <label>Parent Project *</label>
+          <select formControlName="projectId" [disabled]="true">
+            <option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Building / Block Name *</label>
+          <input type="text" formControlName="name" placeholder="e.g. Block A, Wing B" />
+        </div>
+
+        <div class="form-group">
+          <label>Total Floors *</label>
+          <input type="number" formControlName="totalFloors" placeholder="e.g. 5" />
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea formControlName="description" rows="3" placeholder="Brief block specs..."></textarea>
+        </div>
+      </div>
+      }
+
+      <!-- FLOOR FORM -->
+      @if (activeFormType === 'FLOOR') {
+      <div [formGroup]="floorForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Project *</label>
+            <select formControlName="projectId" [disabled]="true">
+              <option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Building Block *</label>
+            <select formControlName="buildingId" [disabled]="true">
+              <option *ngFor="let b of buildings" [value]="b.id">{{ b.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Floor Name *</label>
+          <input type="text" formControlName="floorName" placeholder="e.g. Ground Floor, 1st Floor" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Floor Number/Level *</label>
+            <input type="number" formControlName="floorNumber" placeholder="e.g. 0, 1, -1" />
+          </div>
+
+          <div class="form-group">
+            <label>Total Allocated Units *</label>
+            <input type="number" formControlName="units" placeholder="e.g. 10" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea formControlName="description" rows="3" placeholder="Additional floor details..."></textarea>
+        </div>
+      </div>
+      }
+
+      <!-- UNIT FORM -->
+      @if (activeFormType === 'UNIT') {
+      <div [formGroup]="unitForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Project *</label>
+            <select formControlName="projectId" [disabled]="true">
+              <option *ngFor="let p of projects" [value]="p.id">{{ p.name }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Building Block *</label>
+            <select formControlName="buildingId" [disabled]="true">
+              <option *ngFor="let b of buildings" [value]="b.id">{{ b.name }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Floor Level *</label>
+            <select formControlName="floorId" [disabled]="true">
+              <option *ngFor="let f of floors" [value]="f.id">{{ f.floorName }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Unit / Shop Number *</label>
+            <input type="text" formControlName="unitNumber" placeholder="e.g. A-101, GF-05" />
+          </div>
+
+          <div class="form-group">
+            <label>Unit Type *</label>
+            <select formControlName="UnitType">
+              <option value="OFFICE">Office</option>
+              <option value="SHOP">Shop</option>
+              <option value="FLAT">Flat</option>
+              <option value="WAREHOUSE">Warehouse</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Area Size (Sqft) *</label>
+            <input type="number" formControlName="areaSqft" placeholder="e.g. 1200" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Availability Class *</label>
+            <select formControlName="availabilityType">
+              <option value="LEASE">Lease</option>
+              <option value="SALE">Sale</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Booking Status *</label>
+            <select formControlName="status">
+              <option value="AVAILABLE">Available</option>
+              <option value="LEASED">Leased</option>
+              <option value="SOLD">Sold</option>
+              <option value="PENDING">Pending Approval</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Lease Specific Fields -->
+        @if (unitForm.get('availabilityType')?.value === 'LEASE') {
+        <div class="form-row animated-fields">
+          <div class="form-group">
+            <label>Monthly Rent (₹)</label>
+            <input type="number" formControlName="monthlyRent" placeholder="Monthly rent amount" />
+          </div>
+          <div class="form-group">
+            <label>Yearly Rent (₹) - Calc</label>
+            <input type="number" formControlName="yearlyRent" readonly placeholder="Calculated yearly amount" />
+          </div>
         </div>
         }
 
-        <div class="modal-actions">
-          <button type="button" class="btn-close" (click)="closeForm()">Cancel</button>
-          <button type="submit" class="btn-submit" [disabled]="projectForm.invalid">
-            {{ isEditMode ? 'Save Changes' : 'Create Project' }}
-          </button>
+        <!-- Sale Specific Fields -->
+        @if (unitForm.get('availabilityType')?.value === 'SALE') {
+        <div class="form-row animated-fields">
+          <div class="form-group">
+            <label>Sale Price (₹)</label>
+            <input type="number" formControlName="salePrice" placeholder="Total selling price" />
+          </div>
+          <div class="form-group">
+            <label>Booking Amount (₹)</label>
+            <input type="number" formControlName="bookingAmount" placeholder="Downpayment deposit" />
+          </div>
         </div>
-      </form>
-    </div>
-  </div>
-  }
-
-  <!-- Projects Table List -->
-  @if (isLoading) {
-  <div class="loading">Loading projects from database...</div>
-  } @else {
-  <div class="table-container">
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Project Name</th>
-          <th>Location</th>
-          <th>Coordinates</th>
-          <th>Type</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (p of projects; track p.id) {
-        <tr>
-          <td><strong>{{ p.name }}</strong></td>
-          <td>{{ p.location }}</td>
-          <td>
-            @if (p.latitude && p.longitude) {
-            <span style="font-size: 0.85rem; color: var(--color-text-muted);">
-              {{ p.latitude | number:'1.4-4' }}, {{ p.longitude | number:'1.4-4' }}
-            </span>
-            } @else {
-            -
-            }
-          </td>
-          <td>{{ p.projectType }}</td>
-          <td><span class="status-badge" [class]="p.status.toLowerCase()">{{ p.status }}</span></td>
-          <td>
-            <button class="btn-edit" (click)="openEditForm(p)">Edit</button>
-            <button class="btn-delete" (click)="onDelete(p.id!)">Delete</button>
-          </td>
-        </tr>
-        } @empty {
-        <tr>
-          <td colspan="7" class="empty-state">No projects found. Create one.</td>
-        </tr>
         }
-      </tbody>
-    </table>
+
+        <div class="form-group">
+          <label>Maintenance Charges / Mo (₹)</label>
+          <input type="number" formControlName="maintenanceCharges" placeholder="Monthly maintenance charges" />
+        </div>
+      </div>
+      }
+
+      <!-- MODAL ACTIONS -->
+      <div class="modal-actions">
+        <button type="button" class="btn-close" (click)="closeForm()">Cancel</button>
+        <button type="submit" class="btn-submit">
+          {{ isEditMode ? 'Save Changes' : 'Create Item' }}
+        </button>
+      </div>
+
+    </form>
   </div>
-  }
 </div>
+}

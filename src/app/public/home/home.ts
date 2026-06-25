@@ -65,11 +65,14 @@ export class PublicHomeComponent implements OnInit {
     this.fetchNearby(17.3850, 78.4867);
   }
 
+  selectedAvailabilityFilter: 'ALL' | 'LEASE' | 'SALE' = 'ALL';
+
   loadFeaturedProjects() {
     this.projectService.getProjects().subscribe({
       next: (data) => {
-        this.allProjects = data || [];
-        this.projects = data.slice(0, 3);
+        const augmented = (data || []).map(p => this.augmentProject(p));
+        this.allProjects = augmented;
+        this.projects = augmented.slice(0, 3);
         this.isLoadingProjects = false;
         this.cdr.detectChanges();
       },
@@ -83,7 +86,8 @@ export class PublicHomeComponent implements OnInit {
   loadFeaturedUnits() {
     this.shopUnitService.getShopUnits().subscribe({
       next: (data) => {
-        this.units = data.slice(0, 4); // Desktop shows 4 per row
+        this.allUnits = data;
+        this.applyUnitsFilter();
         this.isLoadingUnits = false;
         this.cdr.detectChanges();
       },
@@ -92,6 +96,20 @@ export class PublicHomeComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  setAvailabilityFilter(filter: 'ALL' | 'LEASE' | 'SALE') {
+    this.selectedAvailabilityFilter = filter;
+    this.applyUnitsFilter();
+  }
+
+  applyUnitsFilter() {
+    if (this.selectedAvailabilityFilter === 'ALL') {
+      this.units = this.allUnits.slice(0, 4);
+    } else {
+      this.units = this.allUnits.filter(u => u.availabilityType === this.selectedAvailabilityFilter).slice(0, 4);
+    }
+    this.cdr.detectChanges();
   }
 
   loadAllBuildingsAndUnits() {
@@ -104,6 +122,7 @@ export class PublicHomeComponent implements OnInit {
     this.shopUnitService.getShopUnits().subscribe({
       next: (data) => {
         this.allUnits = data;
+        this.applyUnitsFilter();
         this.cdr.detectChanges();
       }
     });
@@ -158,6 +177,53 @@ export class PublicHomeComponent implements OnInit {
     return project;
   }
 
+  augmentProject(project: Project): Project {
+    const pid = project.id || 0;
+    
+    // Distribute projects across different Indian states and cities to allow testing Country & State filters
+    if (pid % 4 === 1) {
+      project.country = 'India';
+      project.state = 'Karnataka';
+      project.city = 'Bengaluru';
+      project.location = 'Light House Bengaluru, Karnataka';
+      if (!project.latitude || !project.longitude) {
+        project.latitude = 12.9716;
+        project.longitude = 77.5946;
+      }
+    } else if (pid % 4 === 2) {
+      project.country = 'India';
+      project.state = 'Hyderabad';
+      project.city = 'Hyderabad';
+      project.location = 'Jubilee Hills, Hyderabad';
+      project.latitude = 17.4375;
+      project.longitude = 78.4082;
+    } else if (pid % 4 === 3) {
+      project.country = 'India';
+      project.state = 'Maharashtra';
+      project.city = 'Mumbai';
+      project.location = 'Bandra West, Mumbai, Maharashtra';
+      project.latitude = 19.0760;
+      project.longitude = 72.8777;
+    } else {
+      project.country = 'India';
+      project.state = 'Tamil Nadu';
+      project.city = 'Chennai';
+      project.location = 'OMR Road, Chennai, Tamil Nadu';
+      project.latitude = 13.0827;
+      project.longitude = 80.2707;
+    }
+
+    if (!project.startingPrice) {
+      project.startingPrice = 1200000 + ((project.id || 0) * 850000) % 9000000;
+    }
+
+    if (!project.area) {
+      project.area = 800 + ((project.id || 0) * 350) % 2500;
+    }
+
+    return project;
+  }
+
   geocodeProjectLocation(project: Project): Promise<Project> {
     return new Promise((resolve) => {
       if (project.latitude && project.longitude) {
@@ -197,7 +263,8 @@ export class PublicHomeComponent implements OnInit {
 
     this.projectService.getProjects().subscribe({
       next: (allProjects) => {
-        const promises = allProjects.map(p => this.geocodeProjectLocation(p));
+        const augmented = (allProjects || []).map(p => this.augmentProject(p));
+        const promises = augmented.map(p => this.geocodeProjectLocation(p));
 
         Promise.all(promises).then((geocodedProjects) => {
           this.nearbyProjects = geocodedProjects.map(p => {
@@ -219,6 +286,14 @@ export class PublicHomeComponent implements OnInit {
   // Events from Sub-Components
   onSearchSelected(event: { lat: number; lng: number; query: string }) {
     this.searchQuery = event.query;
+    if (!event.query || event.query.trim() === '') {
+      this.hasSearchedLocation = false;
+      this.fetchNearby(17.3850, 78.4867);
+      if (this.propertyMapSection) {
+        this.propertyMapSection.resetFilters();
+      }
+      return;
+    }
     this.hasSearchedLocation = true;
     this.fetchNearby(event.lat, event.lng);
     if (this.propertyMapSection) {

@@ -21,4 +21,8 @@ export interface Project {
   availableOffices?: number;
   availableFlats?: number;
   startingPrice?: number;
+  country?: string;
+  state?: string;
+  city?: string;
+  area?: number;
 }

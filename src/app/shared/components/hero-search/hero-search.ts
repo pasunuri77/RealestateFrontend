@@ -31,7 +31,7 @@ export class HeroSearchComponent {
     { label: 'All', icon: 'business', type: 'ALL', filterType: 'RESET', value: 'ALL' },
     { label: 'Commercial', icon: 'storefront', type: 'COMMERCIAL', filterType: 'projectType', value: 'COMMERCIAL' },
     { label: 'Residential', icon: 'home', type: 'RESIDENTIAL', filterType: 'projectType', value: 'RESIDENTIAL' },
-    { label: 'Mixed Use', icon: 'domain', type: 'MIXED', filterType: 'projectType', value: 'MIXED' },
+    { label: 'Commercial & Residential', icon: 'domain', type: 'MIXED_USE', filterType: 'projectType', value: 'MIXED_USE' },
     { label: 'Offices', icon: 'work', type: 'OFFICE', filterType: 'unitType', value: 'OFFICE' },
     { label: 'Shops', icon: 'shopping_bag', type: 'SHOP', filterType: 'unitType', value: 'SHOP' }
   ];
@@ -50,7 +50,17 @@ export class HeroSearchComponent {
       clearTimeout(this.searchDebounceTimer);
     }
 
-    if (!val || val.trim().length < 3) {
+    if (!val || val.trim().length === 0) {
+      this.suggestions = [];
+      this.showSuggestions = false;
+      this.noSuggestionsFound = false;
+      this.isLoadingSuggestions = false;
+      this.searchSelected.emit({ lat: 17.3850, lng: 78.4867, query: '' });
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (val.trim().length < 3) {
       this.suggestions = [];
       this.showSuggestions = false;
       this.noSuggestionsFound = false;

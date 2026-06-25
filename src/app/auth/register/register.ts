@@ -99,7 +99,7 @@ export class RegisterComponent implements OnDestroy {
       const email = this.registerForm.get('email')?.value;
       const pin = this.verificationForm.get('pin')?.value;
 
-      this.authService.verifyEmail(email, pin).subscribe({
+      this.authService.verifyEmail({ email, pin }).subscribe({
         next: () => {
           this.isLoading = false;
           this.successMessage = 'Email verified successfully! Redirecting to login...';

@@ -9,6 +9,9 @@ import { PublicLeaseFormComponent } from './public/lease-form/lease-form';
 import { PublicPurchaseFormComponent } from './public/purchase-form/purchase-form';
 import { LoginComponent } from './auth/login/login';
 import { RegisterComponent } from './auth/register/register';
+import { ForgotPasswordComponent } from './auth/forgot-password/forgot-password';
+import { ResetPasswordComponent } from './auth/reset-password/reset-password';
+import { ProfileComponent } from './public/profile/profile';
 import { AdminDashboardComponent } from './admin/dashboard/dashboard';
 import { AdminProjectsComponent } from './admin/projects/projects';
 import { AdminBuildingsComponent } from './admin/buildings/buildings';
@@ -34,7 +37,10 @@ export const routes: Routes = [
       { path: 'purchase-requests', component: AdminPurchaseRequestsComponent, canActivate: [authGuard] },
       { path: 'lease-requests', component: AdminLeaseRequestsComponent, canActivate: [authGuard] },
       { path: 'auth/login', component: LoginComponent },
-      { path: 'auth/register', component: RegisterComponent }
+      { path: 'auth/register', component: RegisterComponent },
+      { path: 'forgot-password', component: ForgotPasswordComponent },
+      { path: 'reset-password', component: ResetPasswordComponent },
+      { path: 'profile', component: ProfileComponent, canActivate: [authGuard] }
     ]
   },
 
@@ -46,9 +52,9 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: AdminDashboardComponent },
       { path: 'projects', component: AdminProjectsComponent },
-      { path: 'buildings', component: AdminBuildingsComponent },
-      { path: 'floors', component: AdminFloorsComponent },
-      { path: 'shop-units', component: AdminShopUnitsComponent },
+      { path: 'buildings', component: AdminProjectsComponent },
+      { path: 'floors', component: AdminProjectsComponent },
+      { path: 'shop-units', component: AdminProjectsComponent },
       { path: 'lease-requests', component: AdminLeaseRequestsComponent },
       { path: 'purchase-requests', component: AdminPurchaseRequestsComponent }
     ]

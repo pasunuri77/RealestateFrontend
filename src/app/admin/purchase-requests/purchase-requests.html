@@ -19,6 +19,7 @@
             <th>Offered Price</th>
             <th>Proposal/Message</th>
             <th>Date Received</th>
+            <th>Status</th>
             @if (authService.isAdmin()) {
               <th>Actions</th>
             }
@@ -35,15 +36,24 @@
               <td><strong class="price-accent">₹{{ p.budget | number }}</strong></td>
               <td class="msg-col">{{ p.message }}</td>
               <td>{{ p.createdAt | date:'short' }}</td>
+              <td><span class="status-badge" [class]="p.status?.toLowerCase() || 'pending'">{{ p.status || 'PENDING' }}</span></td>
               @if (authService.isAdmin()) {
                 <td>
-                  <button class="btn-delete" (click)="onDelete(p.id!)">Remove</button>
+                  <div class="actions-wrapper">
+                    <select #statusSelect [value]="p.status || 'PENDING'" (change)="onChangeStatus(p.id!, statusSelect.value)" class="status-select">
+                      <option value="PENDING">PENDING</option>
+                      <option value="CONTACTED">CONTACTED</option>
+                      <option value="APPROVED">APPROVED</option>
+                      <option value="REJECTED">REJECTED</option>
+                    </select>
+                    <button class="btn-delete" (click)="onDelete(p.id!)">Remove</button>
+                  </div>
                 </td>
               }
             </tr>
           } @empty {
             <tr>
-              <td [attr.colspan]="authService.isAdmin() ? 6 : 5" class="empty-state">No purchase requests submitted yet.</td>
+              <td [attr.colspan]="authService.isAdmin() ? 7 : 6" class="empty-state">No purchase requests submitted yet.</td>
             </tr>
           }
         </tbody>

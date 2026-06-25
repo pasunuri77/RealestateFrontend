@@ -7,4 +7,5 @@ export interface PurchaseRequest {
   budget: number;
   message: string;
   createdAt?: string;
+  status?: string;
 }
