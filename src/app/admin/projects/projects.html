@@ -255,7 +255,7 @@
           <label>Location *</label>
           <div class="search-input-container" style="position: relative;">
             <span class="material-icons search-input-icon">search</span>
-            <input type="text" formControlName="location" placeholder="Type location to search & select..." 
+            <input type="text" formControlName="location" placeholder="Type location to search & select..."
               (input)="onSearchInput($event)" (keydown)="onSearchKeydown($event)" (blur)="onSearchBlur()"
               class="search-input" />
           </div>
@@ -303,6 +303,43 @@
             </select>
           </div>
         </div>
+
+        @if (!isEditMode) {
+          <!-- Display Admin details statically when creating project -->
+          <div class="owner-info-card" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem;">
+            <h4 style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: #166534; display: flex; align-items: center; gap: 0.25rem;">
+              <span class="material-icons" style="font-size: 1.1rem; color: #15803d;">verified_user</span>
+              Owner Details
+            </h4>
+            <p style="margin: 0 0 0.25rem 0; font-size: 0.85rem; color: #1e293b;">
+              <strong>Full Name:</strong> {{ projectForm.get('ownerName')?.value }}
+            </p>
+            <p style="margin: 0; font-size: 0.85rem; color: #1e293b; line-height: 1.4;">
+              <strong>Contact:</strong> {{ projectForm.get('ownerContact')?.value }}
+            </p>
+            @if (getCompanyAddress()) {
+              <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: #1e293b; line-height: 1.4;">
+                <strong>Address: </strong>{{ getCompanyAddress() }}
+              </p>
+            }
+            <!-- Hidden inputs so Form validation remains valid -->
+            <input type="hidden" formControlName="ownerName" />
+            <input type="hidden" formControlName="ownerContact" />
+          </div>
+        } @else {
+          <!-- Editable fields when editing project -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Owner Name *</label>
+              <input type="text" formControlName="ownerName" placeholder="e.g. John Doe" />
+            </div>
+
+            <div class="form-group">
+              <label>Owner Contact Details *</label>
+              <input type="text" formControlName="ownerContact" placeholder="e.g. john@example.com, +919999999999" />
+            </div>
+          </div>
+        }
 
         <div class="form-row">
           <div class="form-group">

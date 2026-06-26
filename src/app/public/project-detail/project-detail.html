@@ -1,101 +1,107 @@
 <div class="detail-page">
   @if (isLoading) {
-    <div class="loading-state">Loading project details...</div>
+  <div class="loading-state">Loading project details...</div>
   } @else if (project) {
-    <!-- Project Header -->
-    <div class="detail-header">
-      <div class="container">
-        <span class="status-badge" [class]="project.status.toLowerCase()">{{ project.status }}</span>
-        <h1>{{ project.name }}</h1>
-        <p class="location" style="display: flex; align-items: center; gap: 0.25rem;"><span class="material-icons" style="font-size: 1.15rem;">place</span> {{ project.location }} | Category: {{ project.projectType }}</p>
-      </div>
+  <!-- Project Header -->
+  <div class="detail-header">
+    <div class="container">
+      <span class="status-badge" [class]="project.status.toLowerCase()">{{ project.status }}</span>
+      <h1>{{ project.name }}</h1>
+      <p class="location" style="display: flex; align-items: center; gap: 0.25rem;"><span class="material-icons"
+          style="font-size: 1.15rem;">place</span> {{ project.location }} | Category: {{ project.projectType }}</p>
     </div>
+  </div>
 
-    <div class="container main-content">
-      <div class="layout-grid">
-        <!-- Left Info Panel -->
-        <div class="info-section">
-          <div class="card">
-            <h2>About the Project</h2>
-            <p class="description">{{ project.description }}</p>
-            
-            <div class="meta-grid">
-              <div class="meta-item">
-                <span>Start Date</span>
-                <strong>{{ project.startDate | date:'mediumDate' }}</strong>
-              </div>
-              <div class="meta-item">
-                <span>Target Handoff</span>
-                <strong>{{ project.expectedCompletionDate | date:'mediumDate' }}</strong>
-              </div>
+  <div class="container main-content">
+    <div class="layout-grid">
+      <!-- Left Info Panel -->
+      <div class="info-section">
+        <div class="card">
+          <h2>About the Project</h2>
+          <p class="description">{{ project.description }}</p>
+
+          <div class="meta-grid">
+            <div class="meta-item">
+              <span>Start Date</span>
+              <strong>{{ project.startDate | date:'mediumDate' }}</strong>
+            </div>
+            <div class="meta-item">
+              <span>Target Handoff</span>
+              <strong>{{ project.expectedCompletionDate | date:'mediumDate' }}</strong>
             </div>
           </div>
-
-          <!-- Buildings List -->
-          <div class="buildings-section card">
-            <h2>Buildings & Blocks</h2>
-            <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1rem;">Click a building to filter available units.</p>
-            @if (buildings.length === 0) {
-              <p class="no-records">No buildings registered under this project yet.</p>
-            } @else {
-              <div class="buildings-list">
-                @for (b of buildings; track b.id) {
-                  <div class="building-item" (click)="selectBuilding(b.id!)" [class.selected]="selectedBuildingId === b.id" style="cursor: pointer; transition: all 0.2s ease;">
-                    <div class="building-info">
-                      <h3>{{ b.name }}</h3>
-                      <p>{{ b.description }}</p>
-                      <div class="building-units-count" style="margin-top: 0.5rem; font-size: 0.85rem; font-weight: 600;">
-                        @if (getUnitCountForBuilding(b.id!) > 0) {
-                          <span style="color: var(--color-primary);"><span class="material-icons" style="font-size: 0.95rem; vertical-align: middle;">corporate_fare</span> {{ getUnitCountForBuilding(b.id!) }} Units Present</span>
-                        } @else {
-                          <span style="color: #ef4444;"><span class="material-icons" style="font-size: 0.95rem; vertical-align: middle;">error_outline</span> No units found</span>
-                        }
-                      </div>
-                    </div>
-                    <div class="building-stat">
-                      <span class="stat-label">Floors</span>
-                      <span class="stat-val">{{ b.totalFloors }}</span>
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-          </div>
         </div>
 
-        <!-- Right Units Panel -->
-        <div class="units-section">
-          <div class="card">
-            <h2>Available Shop & Office Units</h2>
-            @if (getFilteredUnits().length === 0) {
-              <p class="no-records">No units found.</p>
-            } @else {
-              <div class="units-list">
-                @for (u of getFilteredUnits(); track u.shopOrUnitId) {
-                  <div class="unit-item">
-                    <div class="unit-info">
-                      <h3>Unit {{ u.unitNumber }}</h3>
-                      <p>Type: {{ u.unitType }} | Area: {{ u.areaSqft }} sq.ft</p>
-                      <span class="badge" [class]="u.availabilityType.toLowerCase()">For {{ u.availabilityType }}</span>
-                    </div>
-                    <div class="unit-actions">
-                      @if (u.availabilityType === 'LEASE' || u.availabilityType === 'BOTH') {
-                        <span class="price-rent">₹{{ u.monthlyRent | number }}/mo</span>
-                      }
-                      @if (u.availabilityType === 'SALE' || u.availabilityType === 'BOTH') {
-                        <span class="price-sale">₹{{ u.salePrice | number }}</span>
-                      }
-                      <button class="btn-explore" [routerLink]="['/units', u.shopOrUnitId]">View Unit</button>
-                    </div>
-                  </div>
-                }
+        <!-- Buildings List -->
+        <div class="buildings-section card">
+          <h2>Buildings & Blocks</h2>
+          <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 1rem;">Click a building to filter
+            available units.</p>
+          @if (buildings.length === 0) {
+          <p class="no-records">No buildings registered under this project yet.</p>
+          } @else {
+          <div class="buildings-list">
+            @for (b of buildings; track b.id) {
+            <div class="building-item" (click)="selectBuilding(b.id!)" [class.selected]="selectedBuildingId === b.id"
+              style="cursor: pointer; transition: all 0.2s ease;">
+              <div class="building-info">
+                <h3>{{ b.name }}</h3>
+                <p>{{ b.description }}</p>
+                <div class="building-units-count" style="margin-top: 0.5rem; font-size: 0.85rem; font-weight: 600;">
+                  @if (getUnitCountForBuilding(b.id!) > 0) {
+                  <span style="color: var(--color-primary);"><span class="material-icons"
+                      style="font-size: 0.95rem; vertical-align: middle;">corporate_fare</span> {{
+                    getUnitCountForBuilding(b.id!) }} Units Present</span>
+                  } @else {
+                  <span style="color: #ef4444;"><span class="material-icons"
+                      style="font-size: 0.95rem; vertical-align: middle;">error_outline</span> No units found</span>
+                  }
+                </div>
               </div>
+              <div class="building-stat">
+                <span class="stat-label">Floors</span>
+                <span class="stat-val">{{ b.totalFloors }}</span>
+              </div>
+            </div>
             }
           </div>
+          }
+        </div>
+      </div>
+
+      <!-- Right Units Panel -->
+      <div class="units-section">
+        <div class="card">
+          <h2>Available Shop & Office Units</h2>
+          @if (getFilteredUnits().length === 0) {
+          <p class="no-records">No units found.</p>
+          } @else {
+          <div class="units-list">
+            @for (u of getFilteredUnits(); track u.shopOrUnitId) {
+            <div class="unit-item">
+              <div class="unit-info">
+                <h3>Unit {{ u.unitNumber }}</h3>
+                <p>Type: {{ u.unitType }} | Area: {{ u.areaSqft }} sq.ft</p>
+                <span class="badge" [class]="u.availabilityType.toLowerCase()">For {{ u.availabilityType }}</span>
+              </div>
+              <div class="unit-actions">
+                @if (u.availabilityType === 'LEASE' || u.availabilityType === 'BOTH') {
+                <span class="price-rent">₹{{ u.monthlyRent | number }}/mo</span>
+                }
+                @if (u.availabilityType === 'SALE' || u.availabilityType === 'BOTH') {
+                <span class="price-sale">₹{{ u.salePrice | number }}</span>
+                }
+                <button class="btn-explore" [routerLink]="['/units', u.shopOrUnitId]">View Unit</button>
+              </div>
+            </div>
+            }
+          </div>
+          }
         </div>
       </div>
     </div>
+  </div>
   } @else {
-    <div class="error-state">Failed to load project details. Please check the ID.</div>
+  <div class="error-state">Failed to load project details. Please check the ID.</div>
   }
 </div>

@@ -15,12 +15,14 @@
         <thead>
           <tr>
             <th>Buyer Details</th>
-            <th>Unit ID</th>
+            <th>Project</th>
+            <th>Unit</th>
             <th>Offered Price</th>
             <th>Proposal/Message</th>
             <th>Date Received</th>
             <th>Status</th>
             @if (authService.isAdmin()) {
+              <th>Details</th>
               <th>Actions</th>
             }
           </tr>
@@ -32,12 +34,16 @@
                 <strong>{{ p.customerName }}</strong><br>
                 <span class="subtext" style="display: inline-flex; align-items: center; gap: 0.25rem; flex-wrap: wrap;"><span class="material-icons" style="font-size: 0.95rem; vertical-align: middle;">phone</span> {{ p.phone }} | <span class="material-icons" style="font-size: 0.95rem; vertical-align: middle;">email</span> {{ p.email }}</span>
               </td>
-              <td>Unit #{{ p.unitId }}</td>
+              <td>{{ getProjectName(p.unitId) }}</td>
+              <td>Unit #{{ getUnitNumber(p.unitId) }}</td>
               <td><strong class="price-accent">₹{{ p.budget | number }}</strong></td>
               <td class="msg-col">{{ p.message }}</td>
               <td>{{ p.createdAt | date:'short' }}</td>
               <td><span class="status-badge" [class]="p.status?.toLowerCase() || 'pending'">{{ p.status || 'PENDING' }}</span></td>
               @if (authService.isAdmin()) {
+                <td>
+                  <button class="btn-view" (click)="openModal(p)">View</button>
+                </td>
                 <td>
                   <div class="actions-wrapper">
                     <select #statusSelect [value]="p.status || 'PENDING'" (change)="onChangeStatus(p.id!, statusSelect.value)" class="status-select">
@@ -53,11 +59,67 @@
             </tr>
           } @empty {
             <tr>
-              <td [attr.colspan]="authService.isAdmin() ? 7 : 6" class="empty-state">No purchase requests submitted yet.</td>
+              <td [attr.colspan]="authService.isAdmin() ? 9 : 7" class="empty-state">No purchase requests submitted yet.</td>
             </tr>
           }
         </tbody>
       </table>
     </div>
+
+    <!-- Details Modal Overlay -->
+    @if (selectedPurchase) {
+      <div class="modal-overlay" (click)="closeModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Purchase Request Details</h2>
+            <button class="close-btn" (click)="closeModal()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-group">
+              <label>Buyer Name</label>
+              <p>{{ selectedPurchase.customerName }}</p>
+            </div>
+            <div class="detail-row">
+              <div class="detail-group">
+                <label>Email Address</label>
+                <p>{{ selectedPurchase.email }}</p>
+              </div>
+              <div class="detail-group">
+                <label>Phone Number</label>
+                <p>{{ selectedPurchase.phone }}</p>
+              </div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-group">
+                <label>Project</label>
+                <p>{{ getProjectName(selectedPurchase.unitId) }}</p>
+              </div>
+              <div class="detail-group">
+                <label>Unit</label>
+                <p>Unit #{{ getUnitNumber(selectedPurchase.unitId) }}</p>
+              </div>
+            </div>
+            <div class="detail-group">
+              <label>Offered Budget / Purchase Price</label>
+              <p class="price-accent" style="font-size: 1.25rem;">₹{{ selectedPurchase.budget | number }}</p>
+            </div>
+            <div class="detail-group">
+              <label>Describe query / customization requirements</label>
+              <p class="msg-box">{{ selectedPurchase.message || 'No details provided.' }}</p>
+            </div>
+            <div class="detail-row">
+              <div class="detail-group">
+                <label>Submission Date</label>
+                <p>{{ selectedPurchase.createdAt | date:'medium' }}</p>
+              </div>
+              <div class="detail-group">
+                <label>Current Status</label>
+                <p><span class="status-badge" [class]="selectedPurchase.status?.toLowerCase() || 'pending'">{{ selectedPurchase.status || 'PENDING' }}</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   }
 </div>

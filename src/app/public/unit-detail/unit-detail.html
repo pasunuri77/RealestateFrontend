@@ -73,13 +73,13 @@
             
             <div class="buttons">
               @if (unit.availabilityType === 'LEASE' || unit.availabilityType === 'BOTH') {
-                <button class="btn-primary" [routerLink]="['/units', unit.shopOrUnitId, 'lease']">
-                  Lease this Unit
+                <button class="btn-primary" [routerLink]="alreadyApplied ? null : ['/units', unit.shopOrUnitId, 'lease']" [disabled]="alreadyApplied">
+                  {{ alreadyApplied ? 'Application Submitted' : 'Lease this Unit' }}
                 </button>
               }
               @if (unit.availabilityType === 'SALE' || unit.availabilityType === 'BOTH') {
-                <button class="btn-secondary" [routerLink]="['/units', unit.shopOrUnitId, 'purchase']">
-                  Purchase this Unit
+                <button class="btn-secondary" [routerLink]="alreadyApplied ? null : ['/units', unit.shopOrUnitId, 'purchase']" [disabled]="alreadyApplied">
+                  {{ alreadyApplied ? 'Application Submitted' : 'Purchase this Unit' }}
                 </button>
               }
             </div>

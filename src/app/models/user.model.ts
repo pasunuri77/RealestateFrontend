@@ -6,4 +6,5 @@ export interface User {
   phone: string;
   password?: string;
   role: 'ADMIN' | 'USER';
+  companyAddress?: string;
 }

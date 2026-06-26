@@ -56,7 +56,8 @@ export class ProfileComponent implements OnInit {
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
       phone: ['', [Validators.required, Validators.pattern('[0-9]{10}')]],
-      email: [{ value: '', disabled: true }]
+      email: [{ value: '', disabled: true }],
+      companyAddress: ['']
     });
 
     this.emailChangeForm = this.fb.group({
@@ -111,7 +112,8 @@ export class ProfileComponent implements OnInit {
           firstName: user.firstName,
           lastName: user.lastName,
           phone: user.phone,
-          email: user.email
+          email: user.email,
+          companyAddress: user.companyAddress || ''
         });
         this.cdr.detectChanges();
       },
@@ -167,7 +169,8 @@ export class ProfileComponent implements OnInit {
       const requestBody = {
         firstName: this.profileForm.value.firstName,
         lastName: this.profileForm.value.lastName,
-        phone: this.profileForm.value.phone
+        phone: this.profileForm.value.phone,
+        companyAddress: this.profileForm.value.companyAddress
       };
 
       this.authService.updateProfile(requestBody).subscribe({
@@ -181,7 +184,8 @@ export class ProfileComponent implements OnInit {
             const updatedSession = {
               ...session,
               name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
-              phone: user.phone
+              phone: user.phone,
+              companyAddress: user.companyAddress
             };
             localStorage.setItem('auth_user', JSON.stringify(updatedSession));
             this.authService.currentUserSignal.set(updatedSession);

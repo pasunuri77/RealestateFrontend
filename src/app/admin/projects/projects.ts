@@ -7,6 +7,7 @@ import { ProjectService } from '../../core/services/project.service';
 import { BuildingService } from '../../core/services/building.service';
 import { FloorService } from '../../core/services/floor.service';
 import { ShopUnitService } from '../../core/services/shop-unit.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Project } from '../../models/project.model';
 import { Building } from '../../models/building.model';
 import { Floor } from '../../models/floor.model';
@@ -24,6 +25,7 @@ export class AdminProjectsComponent implements OnInit {
   private buildingService = inject(BuildingService);
   private floorService = inject(FloorService);
   private shopUnitService = inject(ShopUnitService);
+  private authService = inject(AuthService);
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
@@ -73,7 +75,9 @@ export class AdminProjectsComponent implements OnInit {
     startDate: ['', Validators.required],
     expectedCompletionDate: ['', Validators.required],
     latitude: ['', Validators.required],
-    longitude: ['', Validators.required]
+    longitude: ['', Validators.required],
+    ownerName: ['', Validators.required],
+    ownerContact: ['', Validators.required]
   });
 
   buildingForm: FormGroup = this.fb.group({
@@ -235,11 +239,20 @@ export class AdminProjectsComponent implements OnInit {
     this.activeFormType = 'PROJECT';
     this.isEditMode = false;
     this.errorMessage = '';
-    this.projectForm.reset({
+    const currentUser = this.authService.currentUserSignal();
+    const contactInfo = currentUser ? [
+      currentUser.email,
+      currentUser.phone
+    ].filter(Boolean).join(', ') : '';
+
+    this.projectForm.reset();
+    this.projectForm.patchValue({
       projectType: 'COMMERCIAL',
       status: 'ONGOING',
       latitude: '',
-      longitude: ''
+      longitude: '',
+      ownerName: currentUser ? currentUser.name : '',
+      ownerContact: contactInfo
     });
     this.marker = null;
     this.mapZoom = 12;
@@ -250,6 +263,10 @@ export class AdminProjectsComponent implements OnInit {
     this.showForm = true;
     this.cdr.detectChanges();
     this.initAdminMap(17.3850, 78.4867);
+  }
+
+  getCompanyAddress(): string {
+    return this.authService.currentUserSignal()?.companyAddress || '';
   }
 
   openEditProject(project: Project) {
@@ -266,7 +283,9 @@ export class AdminProjectsComponent implements OnInit {
       startDate: project.startDate ? project.startDate.split('T')[0] : '',
       expectedCompletionDate: project.expectedCompletionDate ? project.expectedCompletionDate.split('T')[0] : '',
       latitude: project.latitude || '',
-      longitude: project.longitude || ''
+      longitude: project.longitude || '',
+      ownerName: (project as any).ownerName || '',
+      ownerContact: (project as any).ownerContact || ''
     });
 
     const lat = project.latitude ? Number(project.latitude) : 17.3850;
@@ -463,8 +482,15 @@ export class AdminProjectsComponent implements OnInit {
         this.cdr.detectChanges();
         return;
       }
+      const currentUser = this.authService.currentUserSignal();
+      const contactVal = this.projectForm.value.ownerContact;
+      const finalContact = !this.isEditMode && currentUser?.companyAddress
+        ? `${contactVal}\nAddress: ${currentUser.companyAddress}`
+        : contactVal;
+
       const payload = {
         ...this.projectForm.value,
+        ownerContact: finalContact,
         latitude: Number(this.projectForm.value.latitude),
         longitude: Number(this.projectForm.value.longitude)
       };

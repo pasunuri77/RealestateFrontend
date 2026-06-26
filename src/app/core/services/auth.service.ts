@@ -26,7 +26,7 @@ export class AuthService {
   private readonly apiUrl = `${environment.apiUrl}/user`;
   
   // Reactive signals for auth state
-  currentUserSignal = signal<{ token: string; role: 'ADMIN' | 'USER'; email: string; name: string; phone?: string; id?: number } | null>(null);
+  currentUserSignal = signal<{ token: string; role: 'ADMIN' | 'USER'; email: string; name: string; phone?: string; id?: number; companyAddress?: string } | null>(null);
   
   isLoggedIn = computed(() => this.currentUserSignal() !== null);
   isAdmin = computed(() => this.currentUserSignal()?.role === 'ADMIN');
@@ -47,7 +47,7 @@ export class AuthService {
   login(credentials: { email: string; password?: string }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
-        // Assume API returns { token, role, email, firstName, lastName, phone, id }
+        // Assume API returns { token, role, email, firstName, lastName, phone, id, companyAddress }
         if (response && response.token) {
           const userSession = {
             token: response.token,
@@ -55,7 +55,8 @@ export class AuthService {
             email: response.email,
             name: `${response.firstName || ''} ${response.lastName || ''}`.trim() || response.email,
             phone: response.phone,
-            id: response.id
+            id: response.id,
+            companyAddress: response.companyAddress
           };
           localStorage.setItem('auth_token', response.token);
           localStorage.setItem('auth_role', response.role);

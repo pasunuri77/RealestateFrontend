@@ -15,11 +15,13 @@
         <thead>
           <tr>
             <th>Customer Details</th>
-            <th>Unit ID</th>
+            <th>Project</th>
+            <th>Unit</th>
             <th>Business Category</th>
             <th>Term</th>
             <th>Status</th>
             @if (authService.isAdmin()) {
+              <th>Details</th>
               <th>Actions</th>
             }
           </tr>
@@ -31,11 +33,15 @@
                 <strong>{{ l.customerName }}</strong><br>
                 <span class="subtext" style="display: inline-flex; align-items: center; gap: 0.25rem; flex-wrap: wrap;"><span class="material-icons" style="font-size: 0.95rem; vertical-align: middle;">phone</span> {{ l.phone }} | <span class="material-icons" style="font-size: 0.95rem; vertical-align: middle;">email</span> {{ l.email }}</span>
               </td>
-              <td>Unit #{{ l.unitId }}</td>
+              <td>{{ getProjectName(l.unitId) }}</td>
+              <td>Unit #{{ getUnitNumber(l.unitId) }}</td>
               <td>{{ l.businessType }}</td>
               <td>{{ l.leaseType }}</td>
               <td><span class="status-badge" [class]="l.status?.toLowerCase()">{{ l.status }}</span></td>
               @if (authService.isAdmin()) {
+                <td>
+                  <button class="btn-view" (click)="openModal(l)">View</button>
+                </td>
                 <td>
                   <div class="actions-wrapper">
                     <select #statusSelect [value]="l.status" (change)="onChangeStatus(l.id!, statusSelect.value)" class="status-select">
@@ -52,11 +58,77 @@
             </tr>
           } @empty {
             <tr>
-              <td [attr.colspan]="authService.isAdmin() ? 6 : 5" class="empty-state">No lease requests found in registry.</td>
+              <td [attr.colspan]="authService.isAdmin() ? 8 : 6" class="empty-state">No lease requests found in registry.</td>
             </tr>
           }
         </tbody>
       </table>
     </div>
+
+    <!-- Details Modal Overlay -->
+    @if (selectedLease) {
+      <div class="modal-overlay" (click)="closeModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Lease Request Details</h2>
+            <button class="close-btn" (click)="closeModal()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="detail-group">
+              <label>Customer Name</label>
+              <p>{{ selectedLease.customerName }}</p>
+            </div>
+            <div class="detail-row">
+              <div class="detail-group">
+                <label>Email Address</label>
+                <p>{{ selectedLease.email }}</p>
+              </div>
+              <div class="detail-group">
+                <label>Phone Number</label>
+                <p>{{ selectedLease.phone }}</p>
+              </div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-group">
+                <label>Project</label>
+                <p>{{ getProjectName(selectedLease.unitId) }}</p>
+              </div>
+              <div class="detail-group">
+                <label>Unit</label>
+                <p>Unit #{{ getUnitNumber(selectedLease.unitId) }}</p>
+              </div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-group">
+                <label>Business Category</label>
+                <p>{{ selectedLease.businessType }}</p>
+              </div>
+              <div class="detail-group">
+                <label>Lease Duration Term</label>
+                <p>{{ selectedLease.leaseType }}</p>
+              </div>
+            </div>
+            <div class="detail-group">
+              <label>Preferred Start Date</label>
+              <p>{{ selectedLease.preferredStartDate | date:'longDate' }}</p>
+            </div>
+            <div class="detail-group">
+              <label>Describe operations / special fitout requests</label>
+              <p class="msg-box">{{ selectedLease.message || 'No details provided.' }}</p>
+            </div>
+            <div class="detail-row">
+              <div class="detail-group">
+                <label>Submission Date</label>
+                <p>{{ selectedLease.createdAt | date:'medium' }}</p>
+              </div>
+              <div class="detail-group">
+                <label>Current Status</label>
+                <p><span class="status-badge" [class]="selectedLease.status?.toLowerCase()">{{ selectedLease.status }}</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   }
 </div>
