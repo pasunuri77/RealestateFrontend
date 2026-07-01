@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, inject, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-hero-search',
@@ -85,7 +86,7 @@ export class HeroSearchComponent {
     }
     this.abortController = new AbortController();
 
-    const url = this.buildAddressSearchUrl(query, 6, true);
+    const url = this.buildAddressSearchUrl(query, 6, true, true);
 
     fetch(url, { signal: this.abortController.signal })
       .then(res => res.json())
@@ -94,21 +95,21 @@ export class HeroSearchComponent {
       })
       .catch(err => {
         if (err.name !== 'AbortError') {
-          console.error("Photon Geocoder Error:", err);
+          console.error("Geocoding Error:", err);
           this.fallbackSearch(query);
         }
       });
   }
 
   private fallbackSearch(query: string) {
-    const fallbackUrl = this.buildAddressSearchUrl(query, 6, false);
+    const fallbackUrl = this.buildAddressSearchUrl(query, 6, false, true);
     fetch(fallbackUrl)
       .then(res => res.json())
       .then(data => {
         this.processFeatures(data, query, false);
       })
       .catch(err => {
-        console.error("Photon Fallback Geocoder Error:", err);
+        console.error("Fallback Geocoding Error:", err);
         this.isLoadingSuggestions = false;
         this.suggestions = [];
         this.noSuggestionsFound = true;
@@ -138,7 +139,7 @@ export class HeroSearchComponent {
     if (!this.searchQuery || this.searchQuery.trim().length < 3) return;
     this.showSuggestions = false;
 
-    const url = this.buildAddressSearchUrl(this.searchQuery.trim(), 1, true);
+    const url = this.buildAddressSearchUrl(this.searchQuery.trim(), 1, true, false);
     fetch(url)
       .then(res => res.json())
       .then(data => {
@@ -150,7 +151,7 @@ export class HeroSearchComponent {
             query: item.fullAddress || item.name
           });
         } else {
-          const fallbackUrl = this.buildAddressSearchUrl(this.searchQuery.trim(), 1, false);
+          const fallbackUrl = this.buildAddressSearchUrl(this.searchQuery.trim(), 1, false, false);
           fetch(fallbackUrl)
             .then(res => res.json())
             .then(fallbackData => {
@@ -166,7 +167,7 @@ export class HeroSearchComponent {
         }
       })
       .catch(err => {
-        console.error("Manual Search Geocoder Error:", err);
+        console.error("Manual Search Geocoding Error:", err);
       });
   }
 
@@ -220,8 +221,27 @@ export class HeroSearchComponent {
     return item.details || [item.city, item.state, item.country].filter(Boolean).join(', ');
   }
 
-  private buildAddressSearchUrl(query: string, limit: number, useBias: boolean = true): string {
+  private buildAddressSearchUrl(query: string, limit: number, useBias: boolean = true, isAutocomplete: boolean = true): string {
+    const apiKey = environment.geoapifyApiKey;
     const exactAddressPrompt = this.buildExactAddressPrompt(query);
+
+    if (apiKey && apiKey !== 'YOUR_GEOAPIFY_API_KEY') {
+      const params = new URLSearchParams({
+        text: exactAddressPrompt,
+        limit: String(limit),
+        filter: 'countrycode:in',
+        apiKey: apiKey
+      });
+
+      if (useBias) {
+        params.append('bias', 'lonlat:78.4867,17.3850');
+      }
+
+      const endpoint = isAutocomplete ? 'autocomplete' : 'search';
+      return `https://api.geoapify.com/v1/geocode/${endpoint}?${params.toString()}`;
+    }
+
+    // Fallback to Photon
     const params = new URLSearchParams({
       q: exactAddressPrompt,
       limit: String(limit),
@@ -302,19 +322,28 @@ export class HeroSearchComponent {
     const fallbackName = props.name || props.street || props.city || this.searchQuery;
     const name = primary || fallbackName;
     const detailsParts = [
-      props.locality,
+      props.suburb || props.locality,
       props.city || props.district,
       props.state,
       props.postcode,
       props.country
     ].filter(Boolean);
     const uniqueDetails = detailsParts.filter((value, index, self) => self.indexOf(value) === index);
-    const fullAddressParts = [name, ...uniqueDetails];
+    
+    let fullAddress = '';
+    let details = uniqueDetails.join(', ');
+
+    if (props.formatted) {
+      fullAddress = props.formatted;
+    } else {
+      const fullAddressParts = [name, ...uniqueDetails];
+      fullAddress = fullAddressParts.filter(Boolean).join(', ');
+    }
 
     return {
       name,
-      fullAddress: fullAddressParts.filter(Boolean).join(', '),
-      details: uniqueDetails.join(', '),
+      fullAddress,
+      details,
       city: props.city || props.locality || props.district || '',
       state: props.state || '',
       country: props.country || '',
