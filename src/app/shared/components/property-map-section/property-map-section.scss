@@ -224,7 +224,8 @@
   overflow: hidden;
   cursor: pointer;
   transition: var(--transition-smooth);
-  height: 140px;
+  height: auto;
+  min-height: 140px;
   flex-shrink: 0;
 
   &:hover, &.highlighted {
@@ -282,7 +283,7 @@
       }
     }
 
-    h3 {
+    h3, .project-title {
       font-size: 1rem;
       font-weight: 700;
       color: var(--color-primary);
@@ -290,6 +291,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      margin-top: 0.25rem;
     }
 
     .address-text {

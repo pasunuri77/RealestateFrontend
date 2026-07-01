@@ -76,7 +76,7 @@
                 <span class="material-icons">navigation</span> {{ project.distance }} km
               </span>
             </div>
-            <h3>{{ project.name }}</h3>
+            <h3 class="project-title">{{ project.name || project.projectName }}</h3>
             <p class="address-text"><span class="material-icons">place</span> {{ project.location }}</p>
             <p class="project-desc-text">{{ project.description }}</p>
 
